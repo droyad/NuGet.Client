@@ -23,32 +23,33 @@ namespace NuGet.BuildTasks
 
         public void LogError(string data)
         {
-            _taskLogging.LogError(data);
+            // Log errors as warnings. Then log the error summary as actual errors.
+            LogWarning(data);
         }
 
         public void LogErrorSummary(string data)
         {
-            _taskLogging.LogMessage(data);
+            _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
         public void LogInformation(string data)
         {
-            _taskLogging.LogMessage(data);
+            _taskLogging.LogMessage(MessageImportance.Normal, data);
         }
 
         public void LogInformationSummary(string data)
         {
-            _taskLogging.LogMessage(data);
+            LogInformation(data);
         }
 
         public void LogMinimal(string data)
         {
-            _taskLogging.LogMessage(data);
+            _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
         public void LogVerbose(string data)
         {
-            _taskLogging.LogMessage(data);
+            _taskLogging.LogMessage(MessageImportance.Low, data);
         }
 
         public void LogWarning(string data)

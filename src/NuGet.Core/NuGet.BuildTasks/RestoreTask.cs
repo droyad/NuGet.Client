@@ -28,8 +28,6 @@ namespace NuGet.BuildTasks
             var log = new MSBuildLogger(Log);
             var graphLines = RestoreGraphItems.Select(item => item.ToString()).ToArray();
 
-            Debugger.Launch();
-
             log.LogDebug($"Graph size: {graphLines.Length}");
 
             using (var cacheContext = new SourceCacheContext())
