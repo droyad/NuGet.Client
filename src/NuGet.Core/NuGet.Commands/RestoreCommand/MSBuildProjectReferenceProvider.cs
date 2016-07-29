@@ -28,102 +28,47 @@ namespace NuGet.Commands
 
             var lookup = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
 
-            var firstLine = msbuildOutputLines.FirstOrDefault();
+            string entryPoint = null;
 
-            if (!string.IsNullOrEmpty(firstLine))
+            foreach (var line in msbuildOutputLines)
             {
-                if (firstLine.StartsWith("{"))
+                if (line.StartsWith("#:", StringComparison.Ordinal))
                 {
-                    var json = GetGraphFile(msbuildOutputLines);
+                    entryPoint = line.Substring(2, line.Length - 2);
 
-                    foreach (var projectObject in json["projects"].Select(token => (JObject)token))
+                    Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
+
+                    if (!lookup.ContainsKey(entryPoint))
                     {
-                        var entryPoint = projectObject["project"].ToObject<string>();
-
-                        Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
-
-                        if (!lookup.ContainsKey(entryPoint))
-                        {
-                            lookup.Add(entryPoint,
-                                new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
-                        }
-
-                        foreach (var projectGraphToken in json["projectGraph"])
-                        {
-                            var parts = projectGraphToken.Value<string>().Split('|');
-
-                            if (parts.Length == 2)
-                            {
-                                var parent = parts[0];
-                                var child = parts[1];
-
-                                var projectReferences = lookup[entryPoint];
-
-                                HashSet<string> children;
-                                if (!projectReferences.TryGetValue(parent, out children))
-                                {
-                                    children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                                    projectReferences.Add(parent, children);
-                                }
-
-                                children.Add(child);
-                            }
-                        }
+                        lookup.Add(entryPoint,
+                            new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
                     }
+
+                    continue;
                 }
-                else if (firstLine.StartsWith("#:"))
+
+                var parts = line.TrimEnd().Split('|');
+
+                if (parts.Length == 2)
                 {
-                    string entryPoint = null;
+                    var parent = parts[0];
+                    var child = parts[1];
 
-                    foreach (var line in msbuildOutputLines)
+                    var projectReferences = lookup[entryPoint];
+
+                    HashSet<string> children;
+                    if (!projectReferences.TryGetValue(parent, out children))
                     {
-                        if (line.StartsWith("#:", StringComparison.Ordinal))
-                        {
-                            entryPoint = line.Substring(2, line.Length - 2);
-
-                            Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
-
-                            if (!lookup.ContainsKey(entryPoint))
-                            {
-                                lookup.Add(entryPoint,
-                                    new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
-                            }
-
-                            continue;
-                        }
-
-                        var parts = line.TrimEnd().Split('|');
-
-                        if (parts.Length == 2)
-                        {
-                            var parent = parts[0];
-                            var child = parts[1];
-
-                            var projectReferences = lookup[entryPoint];
-
-                            HashSet<string> children;
-                            if (!projectReferences.TryGetValue(parent, out children))
-                            {
-                                children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                                projectReferences.Add(parent, children);
-                            }
-
-                            children.Add(child);
-                        }
-                        else
-                        {
-                            Debug.Fail("Invalid: " + line);
-                        }
+                        children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        projectReferences.Add(parent, children);
                     }
+
+                    children.Add(child);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Invalid dg file format!");
+                    Debug.Fail("Invalid: " + line);
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException("Empty dg file!");
             }
 
             foreach (var entryPointKey in lookup.Keys)
