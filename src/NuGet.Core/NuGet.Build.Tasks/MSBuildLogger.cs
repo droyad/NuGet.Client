@@ -2,7 +2,7 @@
 using Microsoft.Build.Utilities;
 using NuGet.Common;
 
-namespace NuGet.BuildTasks
+namespace NuGet.Build.Tasks
 {
     /// <summary>
     /// TaskLoggingHelper -> ILogger

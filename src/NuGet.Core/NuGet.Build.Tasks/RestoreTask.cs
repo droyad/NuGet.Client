@@ -10,7 +10,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.BuildTasks
+namespace NuGet.Build.Tasks
 {
     /// <summary>
     /// .NET Core compatible restore task for csproj + project.json.
