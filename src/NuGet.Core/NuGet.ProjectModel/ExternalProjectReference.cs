@@ -14,6 +14,7 @@ namespace NuGet.ProjectModel
     public class ExternalProjectReference : IEquatable<ExternalProjectReference>, IComparable<ExternalProjectReference>
     {
         private PackageSpec _packageSpec;
+        private Dictionary<string, object> _properties = new Dictionary<string, object>(StringComparer.Ordinal);
 
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
@@ -45,6 +46,30 @@ namespace NuGet.ProjectModel
             string packageSpecPath,
             string msbuildProjectPath,
             IEnumerable<string> projectReferences)
+            : this(
+                  uniqueName,
+                  packageSpecProjectName,
+                  packageSpecPath,
+                  msbuildProjectPath,
+                  projectReferences,
+                  Enumerable.Empty<KeyValuePair<string, object>>())
+        {
+        }
+
+        /// <summary>
+        /// Represents a reference to a project produced by an external build system, such as msbuild.
+        /// </summary>
+        /// <param name="uniqueName">unique project name or full path</param>
+        /// <param name="packageSpecPath">project.json file path or null if none exists</param>
+        /// <param name="msbuildProjectPath">project file if one exists</param>
+        /// <param name="projectReferences">unique names of the referenced projects</param>
+        public ExternalProjectReference(
+            string uniqueName,
+            string packageSpecProjectName,
+            string packageSpecPath,
+            string msbuildProjectPath,
+            IEnumerable<string> projectReferences,
+            IEnumerable<KeyValuePair<string, object>> properties)
         {
             if (uniqueName == null)
             {
@@ -56,17 +81,35 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(projectReferences));
             }
 
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             UniqueName = uniqueName;
             PackageSpecPath = packageSpecPath;
             MSBuildProjectPath = msbuildProjectPath;
             PackageSpecProjectName = packageSpecProjectName;
             ExternalProjectReferences = projectReferences.ToList();
+
+            foreach (var property in properties)
+            {
+                _properties.Add(property.Key, property.Value);
+            }
         }
 
         /// <summary>
         /// Unique name of the external project
         /// </summary>
         public string UniqueName { get; }
+
+        public IReadOnlyDictionary<string, object> Properties
+        {
+            get
+            {
+                return _properties;
+            }
+        }
 
         /// <summary>
         /// The path to the project.json file representing the NuGet dependencies of the project

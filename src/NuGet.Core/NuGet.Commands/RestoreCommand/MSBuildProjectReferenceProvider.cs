@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.ProjectModel;
 
@@ -25,47 +28,102 @@ namespace NuGet.Commands
 
             var lookup = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
 
-            string entryPoint = null;
+            var firstLine = msbuildOutputLines.FirstOrDefault();
 
-            foreach (var line in msbuildOutputLines)
+            if (!string.IsNullOrEmpty(firstLine))
             {
-                if (line.StartsWith("#:", StringComparison.Ordinal))
+                if (firstLine.StartsWith("{"))
                 {
-                    entryPoint = line.Substring(2, line.Length - 2);
+                    var json = GetGraphFile(msbuildOutputLines);
 
-                    Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
-
-                    if (!lookup.ContainsKey(entryPoint))
+                    foreach (var projectObject in json["projects"].Select(token => (JObject)token))
                     {
-                        lookup.Add(entryPoint,
-                            new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
-                    }
+                        var entryPoint = projectObject["project"].ToObject<string>();
 
-                    continue;
+                        Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
+
+                        if (!lookup.ContainsKey(entryPoint))
+                        {
+                            lookup.Add(entryPoint,
+                                new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
+                        }
+
+                        foreach (var projectGraphToken in json["projectGraph"])
+                        {
+                            var parts = projectGraphToken.Value<string>().Split('|');
+
+                            if (parts.Length == 2)
+                            {
+                                var parent = parts[0];
+                                var child = parts[1];
+
+                                var projectReferences = lookup[entryPoint];
+
+                                HashSet<string> children;
+                                if (!projectReferences.TryGetValue(parent, out children))
+                                {
+                                    children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    projectReferences.Add(parent, children);
+                                }
+
+                                children.Add(child);
+                            }
+                        }
+                    }
                 }
-
-                var parts = line.TrimEnd().Split('|');
-
-                if (parts.Length == 2)
+                else if (firstLine.StartsWith("#:"))
                 {
-                    var parent = parts[0];
-                    var child = parts[1];
+                    string entryPoint = null;
 
-                    var projectReferences = lookup[entryPoint];
-
-                    HashSet<string> children;
-                    if (!projectReferences.TryGetValue(parent, out children))
+                    foreach (var line in msbuildOutputLines)
                     {
-                        children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        projectReferences.Add(parent, children);
-                    }
+                        if (line.StartsWith("#:", StringComparison.Ordinal))
+                        {
+                            entryPoint = line.Substring(2, line.Length - 2);
 
-                    children.Add(child);
+                            Debug.Assert(!lookup.ContainsKey(entryPoint), "Duplicate entry point in msbuild results");
+
+                            if (!lookup.ContainsKey(entryPoint))
+                            {
+                                lookup.Add(entryPoint,
+                                    new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase));
+                            }
+
+                            continue;
+                        }
+
+                        var parts = line.TrimEnd().Split('|');
+
+                        if (parts.Length == 2)
+                        {
+                            var parent = parts[0];
+                            var child = parts[1];
+
+                            var projectReferences = lookup[entryPoint];
+
+                            HashSet<string> children;
+                            if (!projectReferences.TryGetValue(parent, out children))
+                            {
+                                children = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                projectReferences.Add(parent, children);
+                            }
+
+                            children.Add(child);
+                        }
+                        else
+                        {
+                            Debug.Fail("Invalid: " + line);
+                        }
+                    }
                 }
                 else
                 {
-                    Debug.Fail("Invalid: " + line);
+                    throw new InvalidOperationException("Invalid dg file format!");
                 }
+            }
+            else
+            {
+                throw new InvalidOperationException("Empty dg file!");
             }
 
             foreach (var entryPointKey in lookup.Keys)
@@ -119,6 +177,30 @@ namespace NuGet.Commands
             _projectJsonCache.TryGetValue(path, out projectJson);
 
             return projectJson;
+        }
+
+        private static JObject GetGraphFile(IEnumerable<string> lines)
+        {
+            using (var stream = new MemoryStream())
+            {
+                // Write the graph file lines into a memory stream
+                using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096, leaveOpen: true))
+                {
+                    foreach (var line in lines)
+                    {
+                        writer.Write(line);
+                    }
+                }
+
+                stream.Seek(0, SeekOrigin.Begin);
+
+                // Read the memory stream into a JObject
+                using (var reader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(reader))
+                {
+                    return JObject.Load(jsonReader);
+                }
+            }
         }
 
         /// <summary>
