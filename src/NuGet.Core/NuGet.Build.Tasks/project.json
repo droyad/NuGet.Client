@@ -1,7 +1,9 @@
 ﻿{
   "version": "3.5.0-*",
-
   "description": "NuGet 3 restore for dotnet CLI",
+  "packInclude": {
+    "tools/NuGet.targets": "NuGet.targets"
+  },
   "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true,
