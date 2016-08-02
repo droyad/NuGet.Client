@@ -227,7 +227,7 @@ namespace NuGet.Commands.Test
 
                 var dgContent = new StringBuilder();
                 dgContent.AppendLine($"#:{projPath1}");
-                dgContent.AppendLine($"{projPath1}|{projPath2}");
+                dgContent.AppendLine($"=:{projPath1}|{projPath2}");
                 dgContent.AppendLine($"#:{projPath2}");
 
                 File.WriteAllText(dgPath, dgContent.ToString());
