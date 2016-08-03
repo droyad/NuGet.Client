@@ -233,17 +233,25 @@ namespace NuGet.Protocol
                 token: cancellationToken);
         }
 
-        public async Task<DownloadResourceResult> DownloadFromUrl(PackageIdentity package,
+        public async Task<DownloadResourceResult> DownloadFromUrl(
+            PackageIdentity package,
             Uri downloadUri,
-            ISettings settings,
+            VersionPackageFolder userPackagesFolder,
             ILogger log,
             CancellationToken token)
         {
-            return await GetDownloadResultUtility.GetDownloadResultAsync(_httpSource, package, downloadUri, settings, log, token);
+            return await GetDownloadResultUtility.GetDownloadResultAsync(
+                _httpSource,
+                package,
+                downloadUri,
+                userPackagesFolder,
+                logger: log,
+                token: token);
         }
 
-        public async Task<DownloadResourceResult> DownloadFromIdentity(PackageIdentity package,
-            ISettings settings,
+        public async Task<DownloadResourceResult> DownloadFromIdentity(
+            PackageIdentity package,
+            VersionPackageFolder userPackagesFolder,
             ILogger log,
             CancellationToken token)
         {
@@ -254,7 +262,13 @@ namespace NuGet.Protocol
                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
             }
 
-            return await GetDownloadResultUtility.GetDownloadResultAsync(_httpSource, package, new Uri(packageInfo.DownloadUrl), settings, log, token);
+            return await GetDownloadResultUtility.GetDownloadResultAsync(
+                _httpSource,
+                package,
+                new Uri(packageInfo.DownloadUrl),
+                userPackagesFolder,
+                logger: log,
+                token: token);
         }
 
         /// <summary>

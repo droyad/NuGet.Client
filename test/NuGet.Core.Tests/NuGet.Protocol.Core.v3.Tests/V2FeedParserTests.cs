@@ -8,6 +8,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -120,9 +121,10 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
 
             // Act & Assert
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var downloadResult = await parser.DownloadFromUrl(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                                                               new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
-                                                              Configuration.NullSettings.Instance,
+                                                              new VersionPackageFolder(packagesDirectory, lowercase: true),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -151,15 +153,18 @@ namespace NuGet.Protocol.Tests
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
-            // Act
-            var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                    new VersionPackageFolder(packagesDirectory, lowercase: true),
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
 
         [Fact]

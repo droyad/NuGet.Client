@@ -5,9 +5,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -28,23 +29,29 @@ namespace NuGet.PackageManagement
             var packageId = Guid.NewGuid().ToString();
             var packageIdentity = new PackageIdentity(packageId, new NuGetVersion("1.0.0"));
 
-            // Act
-            Exception exception = null;
-            try
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
-                    packageIdentity,
-                    Configuration.NullSettings.Instance,
-                    Common.NullLogger.Instance,
-                    CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-            // Assert
-            Assert.NotNull(exception);
+                // Act
+                Exception exception = null;
+                try
+                {
+                    await PackageDownloader.GetDownloadResourceResultAsync(
+                        v2sourceRepository,
+                        packageIdentity,
+                        globalPackagesFolder,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+
+                // Assert
+                Assert.NotNull(exception);
+            }
         }
 
         /// <summary>
@@ -59,23 +66,28 @@ namespace NuGet.PackageManagement
             var packageId = Guid.NewGuid().ToString();
             var packageIdentity = new PackageIdentity(packageId, new NuGetVersion("1.0.0"));
 
-            // Act
-            Exception exception = null;
-            try
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
-                    packageIdentity,
-                    Configuration.NullSettings.Instance,
-                    Common.NullLogger.Instance,
-                    CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-            // Assert
-            Assert.NotNull(exception);
+                // Act
+                Exception exception = null;
+                try
+                {
+                    await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                        packageIdentity,
+                        globalPackagesFolder,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+
+                // Assert
+                Assert.NotNull(exception);
+            }
         }
 
         [Fact]
@@ -86,19 +98,24 @@ namespace NuGet.PackageManagement
             var v2sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
-                packageIdentity,
-                Configuration.NullSettings.Instance,
-                Common.NullLogger.Instance,
-                CancellationToken.None))
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                // Act
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                    packageIdentity,
+                    globalPackagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                    Assert.Equal(185476, targetPackageStream.Length);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -110,19 +127,24 @@ namespace NuGet.PackageManagement
             var v3sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
-                packageIdentity,
-                Configuration.NullSettings.Instance,
-                Common.NullLogger.Instance,
-                CancellationToken.None))
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                // Act
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                    packageIdentity,
+                    globalPackagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                    Assert.Equal(185476, targetPackageStream.Length);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -139,17 +161,22 @@ namespace NuGet.PackageManagement
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                Configuration.NullSettings.Instance,
-                Common.NullLogger.Instance,
-                CancellationToken.None))
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-                // Assert
-                Assert.True(targetPackageStream.CanSeek);
+                // Act
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                    packageIdentity,
+                    globalPackagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -165,11 +192,17 @@ namespace NuGet.PackageManagement
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                Configuration.NullSettings.Instance,
-                Common.NullLogger.Instance,
-                CancellationToken.None));
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+
+                // Act & Assert
+                await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                    packageIdentity,
+                    globalPackagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None));
+            }
         }
 
         [Fact]
@@ -187,17 +220,22 @@ namespace NuGet.PackageManagement
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                Configuration.NullSettings.Instance,
-                Common.NullLogger.Instance,
-                CancellationToken.None))
+            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
-                // Assert
-                Assert.True(targetPackageStream.CanSeek);
+                // Act
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                globalPackagesFolder,
+                NullLogger.Instance,
+                CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
     }

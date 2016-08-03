@@ -27,8 +27,7 @@ namespace NuGet.Protocol.Core.Types
         private string _source;
         private bool _disableBuffering;
 
-        public PackageUpdateResource(string source,
-            HttpSource httpSource)
+        public PackageUpdateResource(string source, HttpSource httpSource)
         {
             _source = source;
             _httpSource = httpSource;
@@ -44,6 +43,7 @@ namespace NuGet.Protocol.Core.Types
             string symbolSource, // empty to not push symbols
             int timeoutInSecond,
             bool disableBuffering,
+            bool lowercase,
             Func<string, string> getApiKey,
             Func<string, string> getSymbolApiKey,
             ILogger log)
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.Core.Types
 
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
+                await PushPackage(packagePath, _source, lowercase, apiKey, requestTimeout, log, tokenSource.Token);
 
                 // symbolSource is only set when:
                 // - The user specified it on the command line
@@ -66,13 +66,14 @@ namespace NuGet.Protocol.Core.Types
                 if (!string.IsNullOrEmpty(symbolSource))
                 {
                     string symbolApiKey = getSymbolApiKey(symbolSource);
-                    await PushSymbols(packagePath, symbolSource, symbolApiKey, requestTimeout, log, tokenSource.Token);
+                    await PushSymbols(packagePath, symbolSource, lowercase, symbolApiKey, requestTimeout, log, tokenSource.Token);
                 }
             }
         }
 
         public async Task Delete(string packageId,
             string packageVersion,
+            bool lowercase,
             Func<string, string> getApiKey,
             Func<string, bool> confirm,
             ILogger log)
@@ -94,7 +95,7 @@ namespace NuGet.Protocol.Core.Types
                     packageVersion,
                     sourceDisplayName
                     ));
-                await DeletePackage(_source, apiKey, packageId, packageVersion, log, CancellationToken.None);
+                await DeletePackage(_source, lowercase, apiKey, packageId, packageVersion, log, CancellationToken.None);
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.DeleteCommandDeletedPackage,
                     packageId,
@@ -108,6 +109,7 @@ namespace NuGet.Protocol.Core.Types
 
         private async Task PushSymbols(string packagePath,
             string source,
+            bool lowercase,
             string apiKey,
             TimeSpan requestTimeout,
             ILogger log,
@@ -130,7 +132,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, requestTimeout, log, token);
+                await PushPackage(symbolPackagePath, source, lowercase, apiKey, requestTimeout, log, token);
             }
         }
 
@@ -146,6 +148,7 @@ namespace NuGet.Protocol.Core.Types
 
         private async Task PushPackage(string packagePath,
             string source,
+            bool lowercase,
             string apiKey,
             TimeSpan requestTimeout,
             ILogger log,
@@ -166,11 +169,12 @@ namespace NuGet.Protocol.Core.Types
 
             foreach (string packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, requestTimeout, log, token);
+                await PushPackageCore(source, lowercase, apiKey, packageToPush, requestTimeout, log, token);
             }
         }
 
         private async Task PushPackageCore(string source,
+            bool lowercase,
             string apiKey,
             string packageToPush,
             TimeSpan requestTimeout,
@@ -187,7 +191,12 @@ namespace NuGet.Protocol.Core.Types
 
             if (sourceUri.IsFile)
             {
-                await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
+                await PushPackageToFileSystem(
+                    sourceUri,
+                    lowercase,
+                    packageToPush,
+                    log,
+                    token);
             }
             else
             {
@@ -316,7 +325,9 @@ namespace NuGet.Protocol.Core.Types
             return request;
         }
 
-        private async Task PushPackageToFileSystem(Uri sourceUri,
+        private async Task PushPackageToFileSystem(
+            Uri sourceUri,
+            bool lowercase,
             string pathToPackage,
             ILogger log,
             CancellationToken token)
@@ -335,19 +346,21 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                var context = new OfflineFeedAddContext(pathToPackage,
-                    root,
-                    log,
+                var context = new OfflineFeedAddContext(
+                    pathToPackage,
+                    new VersionPackageFolder(root, lowercase),
                     throwIfSourcePackageIsInvalid: true,
                     throwIfPackageExistsAndInvalid: false,
                     throwIfPackageExists: false,
-                    expand: true);
+                    expand: true,
+                    logger: log);
                 await OfflineFeedUtility.AddPackageToSource(context, token);
             }
         }
 
         // Deletes a package from a Http server or file system
         private async Task DeletePackage(string source,
+            bool lowercase,
             string apiKey,
             string packageId,
             string packageVersion,
@@ -357,7 +370,7 @@ namespace NuGet.Protocol.Core.Types
             var sourceUri = GetServiceEndpointUrl(source, string.Empty);
             if (sourceUri.IsFile)
             {
-                DeletePackageFromFileSystem(source, packageId, packageVersion, logger);
+                DeletePackageFromFileSystem(source, lowercase, packageId, packageVersion, logger);
             }
             else
             {
@@ -408,12 +421,17 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Deletes a package from a FileSystem.
-        private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion, ILogger logger)
+        private void DeletePackageFromFileSystem(
+            string source,
+            bool lowercase,
+            string packageId,
+            string packageVersion,
+            ILogger logger)
         {
             var sourceuri = UriUtility.CreateSourceUri(source);
             var root = sourceuri.LocalPath;
             var resolver = new PackagePathResolver(sourceuri.AbsolutePath, useSideBySidePaths: true);
-            resolver.GetPackageFileName(new Packaging.Core.PackageIdentity(packageId, new NuGetVersion(packageVersion)));
+            resolver.GetPackageFileName(new PackageIdentity(packageId, new NuGetVersion(packageVersion)));
             var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
             if (IsV2LocalRepository(root))
             {
@@ -427,7 +445,9 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
+                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(
+                    packageIdentity,
+                    new VersionPackageFolder(root, lowercase));
                 if (!Directory.Exists(packageDirectory))
                 {
                     throw new ArgumentException(Strings.DeletePackage_NotFound);

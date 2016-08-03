@@ -18,6 +18,7 @@ namespace NuGet.Commands
             IPackageSourceProvider sourceProvider,
             string packagePath,
             string source,
+            bool lowercase,
             string apiKey,
             string symbolSource,
             string symbolApiKey,
@@ -61,6 +62,7 @@ namespace NuGet.Commands
                 symbolSource,
                 timeoutSeconds,
                 disableBuffering,
+                lowercase,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
                 logger);

@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.IO;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
@@ -48,11 +50,12 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Delete_MissingArguments);
                     }
 
-                    string packageId = arguments.Values[0];
-                    string packageVersion = arguments.Values[1];
-                    string sourcePath = source.Value();
-                    string apiKeyValue = apikey.Value();
-                    bool nonInteractiveValue = nonInteractive.HasValue();
+                    var packageId = arguments.Values[0];
+                    var packageVersion = arguments.Values[1];
+                    var sourcePath = source.Value();
+                    var lowercase = true;
+                    var apiKeyValue = apikey.Value();
+                    var nonInteractiveValue = nonInteractive.HasValue();
 
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
@@ -62,6 +65,7 @@ namespace NuGet.CommandLine.XPlat
                         packageId,
                         packageVersion,
                         sourcePath,
+                        lowercase,
                         apiKeyValue,
                         nonInteractiveValue,
                         Confirm,

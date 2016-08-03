@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
@@ -23,8 +23,8 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
-            ISettings settings,
-            NuGet.Common.ILogger logger,
+            VersionPackageFolder folder,
+            ILogger logger,
             CancellationToken token);
 
         public event EventHandler<PackageProgressEventArgs> Progress;

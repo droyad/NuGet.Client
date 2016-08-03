@@ -22,11 +22,13 @@ namespace NuGet.Protocol
 
             if (await source.GetFeedType(token) == FeedType.HttpV2)
             {
-                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
-
                 var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
 
-                resource = new PackageSearchResourceV2Feed(httpSourceResource, serviceDocument.BaseAddress, source.PackageSource);
+                var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
+
+                var feed = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
+
+                resource = new PackageSearchResourceV2Feed(feed);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

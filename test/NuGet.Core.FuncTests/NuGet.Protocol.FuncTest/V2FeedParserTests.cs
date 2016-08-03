@@ -26,15 +26,18 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                                                              new Uri($"https://www.{randomName}.org/api/v2/"),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
+                    new Uri($"https://www.{randomName}.org/api/v2/"),
+                    new VersionPackageFolder(packagesDirectory, lowercase: true),
+                    NullLogger.Instance,
+                    CancellationToken.None));
 
-            // Assert
-            Assert.NotNull(ex);
-            Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+                // Assert
+                Assert.NotNull(ex);
+                Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+            }
         }
 
         [Fact]
@@ -48,15 +51,19 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
-            var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
-                Configuration.NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
+                    new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
+                    new VersionPackageFolder(packagesDirectory, lowercase: true),
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
+                
         }
 
         [Fact]
@@ -70,8 +77,9 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act & Assert
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                                                              Configuration.NullSettings.Instance,
+                                                              new VersionPackageFolder(packagesDirectory, lowercase: true),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -118,8 +126,9 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
-                                                              Configuration.NullSettings.Instance,
+                                                              new VersionPackageFolder(packagesDirectory, lowercase: true),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -254,8 +263,9 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
-                                                              Configuration.NullSettings.Instance,
+                                                              new VersionPackageFolder(packagesDirectory, lowercase: true),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {

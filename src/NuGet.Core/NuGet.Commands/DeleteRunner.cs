@@ -3,9 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Common;
-using NuGet.Protocol.Core.Types;
+using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
@@ -20,6 +19,7 @@ namespace NuGet.Commands
             string packageId,
             string packageVersion,
             string source,
+            bool lowercase,
             string apiKey,
             bool nonInteractive,
             Func<string, bool> confirmFunc,
@@ -32,6 +32,7 @@ namespace NuGet.Commands
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
+                lowercase,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 desc => nonInteractive || confirmFunc(desc),
                 logger);

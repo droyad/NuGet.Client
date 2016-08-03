@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -33,15 +30,19 @@ namespace NuGet.Protocol.Tests
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
-            // Act 
-            var actual = await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                var actual = await downloadResource.GetDownloadResourceResultAsync(
+                    new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                    new VersionPackageFolder(packagesDirectory, lowercase: true),
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
     }
 }

@@ -25,9 +25,10 @@ namespace NuGet.CommandLine
                 NonInteractive = true;
             }
 
-            string packageId = Arguments[0];
-            string packageVersion = Arguments[1];
+            var packageId = Arguments[0];
+            var packageVersion = Arguments[1];
             string apiKeyValue = null;
+            var lowercase = true;
 
             if (!string.IsNullOrEmpty(ApiKey))
             {
@@ -44,6 +45,7 @@ namespace NuGet.CommandLine
                 packageId,
                 packageVersion,
                 Source,
+                lowercase,
                 apiKeyValue,
                 NonInteractive,
                 Console.Confirm,
