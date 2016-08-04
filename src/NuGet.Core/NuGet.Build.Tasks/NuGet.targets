@@ -24,7 +24,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="Restore" DependsOnTargets="_GenerateRestoreGraph">
     <!-- Call restore -->
-    <RestoreTask RestoreGraphItems="@(_RestoreGraphEntry)" />
+    <RestoreTask
+      RestoreGraphItems="@(_RestoreGraphEntry)"
+      RestoreSources="$(RestoreSources)"
+      RestorePackagesPath="$(RestorePackagesPath)"
+      RestoreDisableParallel="$(RestoreDisableParallel)"
+      RestoreConfigFile="$(RestoreConfigFile)"
+      RestoreNoCache="$(RestoreNoCache)"
+      RestoreIgnoreFailedSource="$(RestoreIgnoreFailedSource)"
+      RestoreForceEnglishOutput="$(RestoreForceEnglishOutput)"
+    />
   </Target>
 
   <!--

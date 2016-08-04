@@ -21,38 +21,38 @@ namespace NuGet.Build.Tasks
         /// DG file entries
         /// </summary>
         [Required]
-        public ITaskItem[] RestoreGraphItems { get; set; }
+        public string[] RestoreGraphItems { get; set; }
 
         /// <summary>
-        /// NuGet sources
+        /// NuGet sources, ; delimited
         /// </summary>
-        public ITaskItem[] RestoreSources { get; set; }
+        public string RestoreSources { get; set; }
 
         /// <summary>
         /// User packages folder
         /// </summary>
-        public ITaskItem RestorePackagesPath { get; set; }
+        public string RestorePackagesPath { get; set; }
 
-        public ITaskItem RestoreDisableParallel { get; set; }
+        public bool RestoreDisableParallel { get; set; }
 
-        public ITaskItem RestoreConfigFile { get; set; }
+        public string RestoreConfigFile { get; set; }
 
-        public ITaskItem RestoreNoCache { get; set; }
+        public bool RestoreNoCache { get; set; }
 
-        public ITaskItem RestoreIgnoreFailedSource { get; set; }
+        public bool RestoreIgnoreFailedSource { get; set; }
 
-        public ITaskItem RestoreForceEnglishOutput { get; set; }
+        public bool RestoreForceEnglishOutput { get; set; }
 
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
-            var graphLines = GetStrings(RestoreGraphItems);
+            var graphLines = RestoreGraphItems;
             var providerCache = new RestoreCommandProvidersCache();
 
             using (var cacheContext = new SourceCacheContext())
             {
-                cacheContext.NoCache = IsTrue(RestoreNoCache);
-                cacheContext.IgnoreFailedSources = IsTrue(RestoreIgnoreFailedSource);
+                cacheContext.NoCache = RestoreNoCache;
+                cacheContext.IgnoreFailedSources = RestoreIgnoreFailedSource;
 
                 // Pre-loaded request provider containing the graph file
                 var providers = new List<IPreLoadedRestoreRequestProvider>();
@@ -65,15 +65,20 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = GetString(RestoreConfigFile),
-                    DisableParallel = IsTrue(RestoreDisableParallel),
-                    GlobalPackagesFolder = GetString(RestorePackagesPath),
+                    ConfigFile = GetNullForEmpty(RestoreConfigFile),
+                    DisableParallel = RestoreDisableParallel,
+                    GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    Sources = new List<string>(GetStrings(RestoreSources)),
                     CachingSourceProvider = sourceProvider
                 };
+
+                if (!string.IsNullOrEmpty(RestoreSources))
+                {
+                    var sources = RestoreSources.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    restoreContext.Sources.AddRange(sources);
+                }
 
                 if (restoreContext.DisableParallel)
                 {
@@ -89,31 +94,9 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        private static string GetString(ITaskItem item)
+        public static string GetNullForEmpty(string s)
         {
-            if (item != null)
-            {
-                var s = item.ToString();
-
-                return string.IsNullOrEmpty(s) ? null : s;
-            }
-
-            return null;
-        }
-
-        private static string[] GetStrings(ITaskItem[] items)
-        {
-            if (items != null)
-            {
-                return items.Select(item => GetString(item)).ToArray();
-            }
-
-            return new string[0];
-        }
-
-        private static bool IsTrue(ITaskItem item)
-        {
-            return Boolean.TrueString.Equals(GetString(item), StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(s) ? null : s;
         }
     }
 }
