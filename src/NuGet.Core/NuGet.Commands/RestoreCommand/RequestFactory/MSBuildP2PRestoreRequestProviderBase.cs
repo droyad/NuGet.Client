@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
@@ -55,6 +56,14 @@ namespace NuGet.Commands
             var externalReferences = msbuildProvider.GetReferences(project.MSBuildProjectPath).ToList();
             request.ExternalProjects = externalReferences;
 
+            // Set output type
+            if (StringComparer.OrdinalIgnoreCase.Equals("netcore", GetPropertyValue(project, "RestoreOutputType")))
+            {
+                request.RestoreOutputType = RestoreOutputType.NETCore;
+                request.RestoreOutputPath = GetPropertyValue(project, "RestoreOutputPath");
+                request.LockFilePath = Path.Combine(request.RestoreOutputPath, "project.assets.json");
+            }
+
             // The lock file is loaded later since this is an expensive operation
 
             var summaryRequest = new RestoreSummaryRequest(
@@ -88,6 +97,22 @@ namespace NuGet.Commands
             }
 
             return requests;
+        }
+
+        private static string GetPropertyValue(ExternalProjectReference project, string key)
+        {
+            List<string> restoreOutputType;
+            if (project.Properties.TryGetValue(key, out restoreOutputType))
+            {
+                var value = restoreOutputType.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
         }
     }
 }
