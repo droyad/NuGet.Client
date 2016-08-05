@@ -758,7 +758,7 @@ EndProject";
             string packagesDirectory)
         {
             var versionFolderPathResolver
-                = new VersionFolderPathResolver(packagesDirectory, lowercase: true);
+                = new VersionFolderPathResolver(packagesDirectory);
 
             var packageFiles = new[]
             {

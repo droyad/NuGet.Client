@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
@@ -22,8 +21,8 @@ namespace NuGet.PackageManagement
         public static async Task<Dictionary<PackageIdentity, PackagePreFetcherResult>> GetPackagesAsync(
             IEnumerable<NuGetProjectAction> actions,
             FolderNuGetProject packagesFolder,
-            VersionPackageFolder globalPackagesFolder,
-            ILogger logger,
+            Configuration.ISettings settings,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (token == null)
@@ -31,9 +30,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (globalPackagesFolder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(globalPackagesFolder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (logger == null)
@@ -128,7 +127,7 @@ namespace NuGet.PackageManagement
                     var task = Task.Run(async () => await PackageDownloader.GetDownloadResourceResultAsync(
                                         action.SourceRepository,
                                         action.PackageIdentity,
-                                        globalPackagesFolder,
+                                        settings,
                                         logger,
                                         token));
 

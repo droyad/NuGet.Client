@@ -38,14 +38,12 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    var versionPackageFolder = new VersionPackageFolder(path, lowercase: true);
-
                     // Try to determine the actual folder feed type by looking for nupkgs
                     if (LocalFolderUtility.GetNupkgsFromFlatFolder(path, NullLogger.Instance).Any())
                     {
                         type = FeedType.FileSystemV2;
                     }
-                    else if (LocalFolderUtility.GetPackagesV3(versionPackageFolder, NullLogger.Instance).Any())
+                    else if (LocalFolderUtility.GetPackagesV3(path, NullLogger.Instance).Any())
                     {
                         type = FeedType.FileSystemV3;
                     }

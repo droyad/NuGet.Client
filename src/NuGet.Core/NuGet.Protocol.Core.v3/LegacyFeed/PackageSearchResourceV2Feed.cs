@@ -7,22 +7,32 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
     public class PackageSearchResourceV2Feed : PackageSearchResource
     {
+        private readonly HttpSource _httpSource;
+        private readonly Configuration.PackageSource _packageSource;
         private readonly V2FeedParser _feedParser;
 
-        public PackageSearchResourceV2Feed(V2FeedParser feedParser)
+        public PackageSearchResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
         {
-            if (feedParser == null)
+            if (httpSourceResource == null)
             {
-                throw new ArgumentNullException(nameof(feedParser));
+                throw new ArgumentNullException(nameof(httpSourceResource));
             }
 
-            _feedParser = feedParser;
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
+            _httpSource = httpSourceResource.HttpSource;
+            _packageSource = packageSource;
+            _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource);
         }
 
         public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(

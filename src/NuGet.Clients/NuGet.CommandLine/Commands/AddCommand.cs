@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -36,16 +35,14 @@ namespace NuGet.CommandLine
             // If the Source Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(Source);
 
-            var folder = new VersionPackageFolder(Source, lowercase: true);
-
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,
-                folder,
+                Source,
+                Console, // IConsole is an ILogger
                 throwIfSourcePackageIsInvalid: true,
                 throwIfPackageExistsAndInvalid: true,
                 throwIfPackageExists: false,
-                expand: Expand,
-                logger: Console);
+                expand: Expand);
 
             await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
         }

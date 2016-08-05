@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -20,23 +18,23 @@ namespace NuGet.PackageManagement.Test
 {
     public class PackagePreFetcherTests
     {
+
         [Fact]
         public async Task PackagePreFetcher_NoActionsInput()
         {
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
                 // Act
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -49,13 +47,12 @@ namespace NuGet.PackageManagement.Test
         public async Task PackagePreFetcher_NoInstallActionsInput()
         {
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var target2 = new PackageIdentity("packageB", NuGetVersion.Parse("1.0.0"));
@@ -67,7 +64,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -81,15 +78,14 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var source = Repository.Factory.GetVisualStudio(new PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+                var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
@@ -101,7 +97,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -124,15 +120,14 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var source = Repository.Factory.GetVisualStudio(new PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+                var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
@@ -145,7 +140,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -168,13 +163,13 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+
 
                 var targetA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var targetA2 = new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0"));
@@ -205,7 +200,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -247,16 +242,15 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var targetNonNormalized = new PackageIdentity("packageA", NuGetVersion.Parse("1.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
 
                 // Add package
                 AddToPackagesFolder(targetNonNormalized, packagesFolderDir);
@@ -268,7 +262,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -290,16 +284,15 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var targetNonNormalized = new PackageIdentity("packageA", NuGetVersion.Parse("1.0"));
-                var source = Repository.Factory.GetVisualStudio(new PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+                var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
@@ -311,7 +304,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -333,15 +326,14 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var source = Repository.Factory.GetVisualStudio(new PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+                var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
                 actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
                 AddToSource(target, sourceDir);
@@ -350,7 +342,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 
@@ -373,15 +365,14 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
+                var testSettings = new Configuration.NullSettings();
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var source = Repository.Factory.GetVisualStudio(new PackageSource(sourceDir.Path));
-                var globalPackagesFolder = new VersionPackageFolder(globalPackagesFolderPath, lowercase: true);
+                var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
                 actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
 
@@ -389,7 +380,7 @@ namespace NuGet.PackageManagement.Test
                 var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    globalPackagesFolder,
+                    testSettings,
                     logger,
                     CancellationToken.None);
 

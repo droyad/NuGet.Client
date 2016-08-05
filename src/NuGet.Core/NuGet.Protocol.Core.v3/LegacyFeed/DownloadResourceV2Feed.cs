@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -24,7 +25,7 @@ namespace NuGet.Protocol
 
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
-            VersionPackageFolder folder,
+            ISettings settings,
             ILogger logger,
             CancellationToken token)
         {
@@ -33,9 +34,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(identity));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (logger == null)
@@ -56,12 +57,12 @@ namespace NuGet.Protocol
                     // If this is a SourcePackageDependencyInfo object with everything populated
                     // and it is from an online source, use the machine cache and download it using the
                     // given url.
-                    return await _feedParser.DownloadFromUrl(sourcePackage, sourcePackage.DownloadUri, folder, logger, token);
+                    return await _feedParser.DownloadFromUrl(sourcePackage, sourcePackage.DownloadUri, settings, logger, token);
                 }
                 else
                 {
                     // Look up the package from the id and version and download it.
-                    return await _feedParser.DownloadFromIdentity(identity, folder, logger, token);
+                    return await _feedParser.DownloadFromIdentity(identity, settings, logger, token);
                 }
             }
             catch (OperationCanceledException)

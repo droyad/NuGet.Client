@@ -34,8 +34,7 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            var packagePath = Arguments[0];
-            var lowercase = true;
+            string packagePath = Arguments[0];
             string apiKeyValue = null;
 
             if (!string.IsNullOrEmpty(ApiKey))
@@ -54,7 +53,6 @@ namespace NuGet.CommandLine
                     SourceProvider,
                     packagePath,
                     Source,
-                    lowercase,
                     apiKeyValue,
                     SymbolSource,
                     SymbolApiKey,

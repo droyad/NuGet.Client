@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -221,23 +220,23 @@ namespace NuGet.Test
                 CreateConfigJson(projectConfig.FullName);
 
                 var sources = new List<SourceRepository>
-                {
-                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                };
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance, lowercase: true);
+                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 // Assert
@@ -273,21 +272,20 @@ namespace NuGet.Test
                 }
 
                 var sources = new List<SourceRepository>
-                {
-                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                };
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
-                var folder = new VersionPackageFolder(packagesFolder, lowercase: false);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
                     GetExternalProjectReferenceContext(),
                     sources,
-                    folder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    packagesFolder,
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
@@ -301,7 +299,7 @@ namespace NuGet.Test
 
                 var context = GetExternalProjectReferenceContext();
 
-                var packageFolders = new[] { folder };
+                var packageFolders = new List<string>() { packagesFolder };
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
@@ -344,21 +342,20 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
-                var folder = new VersionPackageFolder(packagesFolder, lowercase: false);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
                     GetExternalProjectReferenceContext(),
                     sources,
-                    folder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    packagesFolder,
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var packageFolders = new[] { folder };
+                var packageFolders = new List<string>() { packagesFolder };
 
-                var resolver = new VersionFolderPathResolver(packagesFolder, lowercase: true);
+                var resolver = new VersionFolderPathResolver(packagesFolder);
                 var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
                 using (var writer = new StreamWriter(hashPath))
@@ -409,20 +406,19 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
-                var folder = new VersionPackageFolder(packagesFolder, lowercase: false);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
                     GetExternalProjectReferenceContext(),
                     sources,
-                    folder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    packagesFolder,
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(packagesFolder, lowercase: true);
-                var packageFolders = new[] { folder };
+                var resolver = new VersionFolderPathResolver(packagesFolder);
+                var packageFolders = new List<string>() { packagesFolder };
 
                 var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
@@ -471,18 +467,18 @@ namespace NuGet.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance, lowercase: true);
+                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var packageFolders = new[] { effectiveGlobalPackagesFolder };
+                var packageFolders = new List<string>() { effectiveGlobalPackagesFolder };
 
                 var context = GetExternalProjectReferenceContext();
 
@@ -527,18 +523,18 @@ namespace NuGet.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance, lowercase: true);
+                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var packageFolders = new[] { effectiveGlobalPackagesFolder };
+                var packageFolders = new List<string>() { effectiveGlobalPackagesFolder };
 
                 var context = GetExternalProjectReferenceContext();
 
@@ -556,8 +552,8 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var globalFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var fallbackFolder = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
@@ -584,20 +580,18 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
-                var globalFolder = new VersionPackageFolder(globalFolderPath, lowercase: true);
-                var fallbackFolder = new VersionPackageFolder(fallbackFolderPath, lowercase: true);
 
                 // Restore to the fallback folder
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     fallbackFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var packageFolders = new[] { globalFolder, fallbackFolder };
+                var packageFolders = new List<string>() { globalFolder, fallbackFolder };
 
                 var context = GetExternalProjectReferenceContext();
 
@@ -615,8 +609,8 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var globalFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var fallbackFolder = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
@@ -644,16 +638,12 @@ namespace NuGet.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-
-                var globalFolder = new VersionPackageFolder(globalFolderPath, lowercase: true);
-                var fallbackFolder = new VersionPackageFolder(fallbackFolderPath, lowercase: true);
-
                 // Restore to the fallback folder
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     fallbackFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 // Restore to global folder
@@ -661,16 +651,16 @@ namespace NuGet.Test
                     GetExternalProjectReferenceContext(),
                     sources,
                     globalFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
-                var resolver = new VersionFolderPathResolver(fallbackFolderPath, lowercase: true);
+                var resolver = new VersionFolderPathResolver(fallbackFolder);
                 var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
                 File.WriteAllText(hashPath, "AA00F==");
 
                 var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var packageFolders = new[] { globalFolder, fallbackFolder };
+                var packageFolders = new List<string>() { globalFolder, fallbackFolder };
 
                 var context = GetExternalProjectReferenceContext();
 
@@ -1022,14 +1012,14 @@ namespace NuGet.Test
                     new TestNuGetProjectContext());
                 var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance, lowercase: true);
+                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                     GetExternalProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 // Assert
@@ -1082,7 +1072,7 @@ namespace NuGet.Test
                 var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
                 solutionFolder.Create();
 
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase: true);
+                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 var context = GetExternalProjectReferenceContext();
                 var logger = (TestLogger)context.Logger;
@@ -1092,7 +1082,7 @@ namespace NuGet.Test
                     context,
                     sources,
                     effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<VersionPackageFolder>(),
+                    Enumerable.Empty<string>(),
                     CancellationToken.None);
 
                 // Assert

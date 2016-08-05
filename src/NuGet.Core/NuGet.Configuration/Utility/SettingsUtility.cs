@@ -129,7 +129,7 @@ namespace NuGet.Configuration
             return settings.DeleteValue(ConfigSection, key);
         }
 
-        public static VersionPackageFolder GetGlobalPackagesFolder(ISettings settings, bool lowercase)
+        public static string GetGlobalPackagesFolder(ISettings settings)
         {
             if (settings == null)
             {
@@ -152,20 +152,18 @@ namespace NuGet.Configuration
             {
                 path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
                 path = Path.GetFullPath(path);
-                return new VersionPackageFolder(path, lowercase: lowercase);
+                return path;
             }
 
-            path = Path.Combine(
-                NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome),
-                DefaultGlobalPackagesFolderPath);
+            path = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome), DefaultGlobalPackagesFolderPath);
 
-            return new VersionPackageFolder(path, lowercase: lowercase);
+            return path;
         }
 
         /// <summary>
         /// Read fallback folders from the environment variable or from nuget.config.
         /// </summary>
-        public static IReadOnlyList<VersionPackageFolder> GetFallbackPackageFolders(ISettings settings)
+        public static IReadOnlyList<string> GetFallbackPackageFolders(ISettings settings)
         {
             if (settings == null)
             {
@@ -198,10 +196,7 @@ namespace NuGet.Configuration
                 paths[i] = Path.GetFullPath(paths[i]);
             }
 
-            // Fallback folders always have lowercase paths.
-            return paths
-                .Select(path => new VersionPackageFolder(path, lowercase: true))
-                .ToList();
+            return paths;
         }
 
         /// <summary>

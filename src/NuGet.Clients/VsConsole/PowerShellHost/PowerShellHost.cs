@@ -486,7 +486,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             List<PackageIdentity> sortedGlobalPackages,
             HashSet<PackageIdentity> finishedPackages)
         {
-            var nugetPaths = NuGetPathContext.Create(_settings, lowercase: true);
+            var nugetPaths = NuGetPathContext.Create(_settings);
             var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
 
             foreach (var package in sortedGlobalPackages)

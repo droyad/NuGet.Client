@@ -22,10 +22,9 @@ namespace NuGet.Protocol
                 var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
 
                 var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
+                var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
 
-                var feed = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
-
-                resource = new MetadataResourceV2Feed(feed, source);
+                resource = new MetadataResourceV2Feed(parser, source);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

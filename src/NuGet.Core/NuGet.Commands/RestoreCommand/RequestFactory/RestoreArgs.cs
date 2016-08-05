@@ -22,8 +22,6 @@ namespace NuGet.Commands
 
         public string GlobalPackagesFolder { get; set; }
 
-        public bool LowercaseGlobalPackagesFolder { get; set; } = true;
-
         public bool DisableParallel { get; set; }
 
         public HashSet<string> Runtimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
@@ -81,22 +79,21 @@ namespace NuGet.Commands
             }
         }
 
-        public VersionPackageFolder GetEffectiveGlobalPackagesFolder(ISettings settings, bool lowercase)
+        public string GetEffectiveGlobalPackagesFolder(string rootDirectory, ISettings settings)
         {
             if (!string.IsNullOrEmpty(GlobalPackagesFolder))
             {
-                // Resolve as relative to the current working directory.
-                var path = Path.GetFullPath(GlobalPackagesFolder);
-                return new VersionPackageFolder(path, lowercase: lowercase);
+                // Resolve as relative to the CWD
+                return Path.GetFullPath(GlobalPackagesFolder);
             }
 
-            // Load from an environment variable, NuGet.Config or default location. Resolve relative
-            // paths to the containing NuGet.Config file path. Relative paths are not supported in 
-            // the environment variable.
-            return SettingsUtility.GetGlobalPackagesFolder(settings, lowercase: lowercase);
+            // Load from environment, nuget.config or default location, and resolve relative paths
+            // to the project root.
+            string globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+            return Path.GetFullPath(Path.Combine(rootDirectory, globalPath));
         }
 
-        public IReadOnlyList<VersionPackageFolder> GetEffectiveFallbackPackageFolders(ISettings settings)
+        public IReadOnlyList<string> GetEffectiveFallbackPackageFolders(ISettings settings)
         {
             return SettingsUtility.GetFallbackPackageFolders(settings);
         }

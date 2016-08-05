@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -19,7 +20,7 @@ namespace NuGet.Protocol
            HttpSource client,
            PackageIdentity identity,
            Uri uri,
-           VersionPackageFolder userPackagesFolder,
+           ISettings settings,
            ILogger logger,
            CancellationToken token)
         {
@@ -27,7 +28,7 @@ namespace NuGet.Protocol
             // Now, check if it is in the global packages folder, before, getting the package stream
 
             // TODO: This code should respect no_cache settings and not write or read packages from the global packages folder
-            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, userPackagesFolder);
+            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
 
             if (packageFromGlobalPackages != null)
             {
@@ -53,7 +54,7 @@ namespace NuGet.Protocol
                             return await GlobalPackagesFolderUtility.AddPackageAsync(
                                 identity,
                                 packageStream,
-                                userPackagesFolder,
+                                settings,
                                 logger,
                                 token);
                         },

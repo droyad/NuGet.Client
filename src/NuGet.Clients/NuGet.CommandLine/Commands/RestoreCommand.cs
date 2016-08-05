@@ -122,18 +122,13 @@ namespace NuGet.CommandLine
                         restoreContext.PackageSaveMode = EffectivePackageSaveMode;
                     }
 
-                    if (!string.IsNullOrEmpty(PackagesDirectory))
-                    {
-                        // Override packages folder
-                        restoreContext.GlobalPackagesFolder = PackagesDirectory;
-                        restoreContext.LowercaseGlobalPackagesFolder = true;
-                    }
-                    else
-                    {
-                        var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings, lowercase: true);
-                        restoreContext.GlobalPackagesFolder = globalPackagesFolder.Path;
-                        restoreContext.LowercaseGlobalPackagesFolder = globalPackagesFolder.Lowercase;
-                    }
+                    // Override packages folder
+                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
+                    restoreContext.GlobalPackagesFolder = GetEffectiveGlobalPackagesFolder(
+                                        PackagesDirectory,
+                                        SolutionDirectory,
+                                        restoreInputs,
+                                        globalPackagesFolder);
 
                     // Providers
                     // Use the settings loaded above in ReadSettings(restoreInputs)
@@ -162,6 +157,8 @@ namespace NuGet.CommandLine
 
         private static string GetEffectiveGlobalPackagesFolder(
             string packagesDirectoryParameter,
+            string solutionDirectoryParameter,
+            PackageRestoreInputs packageRestoreInputs,
             string globalPackagesFolder)
         {
             // Return the -PackagesDirectory parameter if specified
@@ -170,7 +167,30 @@ namespace NuGet.CommandLine
                 return packagesDirectoryParameter;
             }
 
-            return globalPackagesFolder;
+            // Return the globalPackagesFolder as-is if it is a full path
+            if (Path.IsPathRooted(globalPackagesFolder))
+            {
+                return globalPackagesFolder;
+            }
+            else if (!string.IsNullOrEmpty(solutionDirectoryParameter)
+                || packageRestoreInputs.RestoringWithSolutionFile)
+            {
+                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
+                    packageRestoreInputs.DirectoryOfSolutionFile :
+                    solutionDirectoryParameter;
+
+                // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
+                // Use the solutionDirectory to construct the full path
+                return Path.Combine(solutionDirectory, globalPackagesFolder);
+            }
+
+            // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
+            // solution directory is not available either. Throw
+            var message = string.Format(
+                CultureInfo.CurrentCulture,
+                LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
+
+            throw new CommandLineException(message);
         }
 
         private static CachingSourceProvider _sourceProvider;

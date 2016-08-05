@@ -68,6 +68,7 @@ namespace NuGet.Test.Utility
             var version = packageContext.Version;
             var runtimeJson = packageContext.RuntimeJson;
 
+            var pathResolver = new VersionFolderPathResolver(null);
             var packagePath = Path.Combine(repositoryDir, $"{id}.{version.ToString()}.nupkg");
             var file = new FileInfo(packagePath);
 
@@ -313,7 +314,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
         {
-            var pathResolver = new VersionFolderPathResolver(root, lowercase: true);
+            var pathResolver = new VersionFolderPathResolver(root);
 
             foreach (var file in nupkgPaths)
             {
@@ -332,7 +333,7 @@ namespace NuGet.Test.Utility
                             fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
                             new VersionFolderPathContext(
                                 identity,
-                                new VersionPackageFolder(root, lowercase: true),
+                                root,
                                 NullLogger.Instance,
                                 saveMode,
                                 XmlDocFileSaveMode.None),

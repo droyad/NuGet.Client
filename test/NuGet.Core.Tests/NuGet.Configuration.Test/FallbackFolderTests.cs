@@ -36,12 +36,10 @@ namespace NuGet.Configuration.Test
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings);
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings);
 
                 // Assert
-                var folder = folders.Single();
-                Assert.Equal(Path.Combine(mockBaseDirectory, "a"), folder.Path);
-                Assert.True(folder.Lowercase);
+                Assert.Equal(Path.Combine(mockBaseDirectory, "a"), paths.Single());
             }
         }
 
@@ -67,12 +65,10 @@ namespace NuGet.Configuration.Test
                 Settings settings = new Settings(subFolder);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings);
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings);
 
                 // Assert
-                var folder = folders.Single();
-                Assert.Equal(testFolder, folder.Path);
-                Assert.True(folder.Lowercase);
+                Assert.Equal(testFolder, paths.Single());
             }
         }
 
@@ -97,12 +93,10 @@ namespace NuGet.Configuration.Test
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings);
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings);
 
                 // Assert
-                var folder = folders.Single();
-                Assert.Equal(testFolder, folder.Path);
-                Assert.True(folder.Lowercase);
+                Assert.Equal(testFolder, paths.Single());
             }
         }
 
@@ -126,16 +120,13 @@ namespace NuGet.Configuration.Test
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
 
                 // Assert
-                Assert.Equal(3, folders.Length);
-                Assert.Equal("d", GetFileName(folders[0].Path));
-                Assert.Equal("b", GetFileName(folders[1].Path));
-                Assert.Equal("c", GetFileName(folders[2].Path));
-                Assert.True(folders[0].Lowercase);
-                Assert.True(folders[1].Lowercase);
-                Assert.True(folders[2].Lowercase);
+                Assert.Equal(3, paths.Length);
+                Assert.Equal("d", GetFileName(paths[0]));
+                Assert.Equal("b", GetFileName(paths[1]));
+                Assert.Equal("c", GetFileName(paths[2]));
             }
         }
 
@@ -186,22 +177,16 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: machineWideSettings);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
 
                 // Assert
-                Assert.Equal(6, folders.Length);
-                Assert.Equal("a", GetFileName(folders[0].Path));
-                Assert.Equal("b", GetFileName(folders[1].Path));
-                Assert.Equal("c", GetFileName(folders[2].Path));
-                Assert.Equal("d", GetFileName(folders[3].Path));
-                Assert.Equal("x", GetFileName(folders[4].Path));
-                Assert.Equal("y", GetFileName(folders[5].Path));
-                Assert.True(folders[0].Lowercase);
-                Assert.True(folders[1].Lowercase);
-                Assert.True(folders[2].Lowercase);
-                Assert.True(folders[3].Lowercase);
-                Assert.True(folders[4].Lowercase);
-                Assert.True(folders[5].Lowercase);
+                Assert.Equal(6, paths.Length);
+                Assert.Equal("a", GetFileName(paths[0]));
+                Assert.Equal("b", GetFileName(paths[1]));
+                Assert.Equal("c", GetFileName(paths[2]));
+                Assert.Equal("d", GetFileName(paths[3]));
+                Assert.Equal("x", GetFileName(paths[4]));
+                Assert.Equal("y", GetFileName(paths[5]));
             }
         }
 
@@ -253,14 +238,12 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: machineWideSettings);
 
                 // Act
-                var folders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
 
                 // Assert
-                Assert.Equal(2, folders.Length);
-                Assert.Equal("a", GetFileName(folders[0].Path));
-                Assert.Equal("b", GetFileName(folders[1].Path));
-                Assert.True(folders[0].Lowercase);
-                Assert.True(folders[1].Lowercase);
+                Assert.Equal(2, paths.Length);
+                Assert.Equal("a", GetFileName(paths[0]));
+                Assert.Equal("b", GetFileName(paths[1]));
             }
         }
 

@@ -311,7 +311,4 @@
   <data name="SymbolApiKey_Description" xml:space="preserve">
     <value>The API key for the symbol server.</value>
   </data>
-  <data name="Switch_LegacyPackageFolder_Description" xml:space="preserve">
-    <value>Use legacy behavior of the global packages folder. This means that ID and version folders have original case instead of lowercase as well and not observing fallback folders.</value>
-  </data>
 </root>

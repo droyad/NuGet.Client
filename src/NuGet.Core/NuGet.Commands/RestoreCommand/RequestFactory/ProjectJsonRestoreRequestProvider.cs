@@ -1,13 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -23,7 +21,7 @@ namespace NuGet.Commands
 
         public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
             string inputPath,
-            RestoreArgs restoreArgs)
+            RestoreArgs restoreContext)
         {
             var paths = new List<string>();
 
@@ -40,7 +38,7 @@ namespace NuGet.Commands
 
             foreach (var path in paths)
             {
-                requests.Add(Create(path, restoreArgs));
+                requests.Add(Create(path, restoreContext));
             }
 
             return Task.FromResult<IReadOnlyList<RestoreSummaryRequest>>(requests);
@@ -62,36 +60,34 @@ namespace NuGet.Commands
 
         private RestoreSummaryRequest Create(
             string inputPath,
-            RestoreArgs restoreArgs)
+            RestoreArgs restoreContext)
         {
             var file = new FileInfo(inputPath);
 
             // Get settings relative to the input file
-            var settings = restoreArgs.GetSettings(file.DirectoryName);
+            var settings = restoreContext.GetSettings(file.DirectoryName);
 
-            var sources = restoreArgs.GetEffectiveSources(settings);
-            var FallbackPackageFolders = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
+            var sources = restoreContext.GetEffectiveSources(settings);
+            var FallbackPackageFolders = restoreContext.GetEffectiveFallbackPackageFolders(settings);
 
-            var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(
-                settings,
-                lowercase: restoreArgs.LowercaseGlobalPackagesFolder);
+            var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(file.DirectoryName, settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
                 FallbackPackageFolders,
                 sources,
-                restoreArgs.CacheContext,
-                restoreArgs.Log);
+                restoreContext.CacheContext,
+                restoreContext.Log);
 
             var project = JsonPackageSpecReader.GetPackageSpec(file.Directory.Name, file.FullName);
 
             var request = new RestoreRequest(
                 project,
                 sharedCache,
-                restoreArgs.Log,
+                restoreContext.Log,
                 disposeProviders: false);
 
-            restoreArgs.ApplyStandardProperties(request);
+            restoreContext.ApplyStandardProperties(request);
 
             var summaryRequest = new RestoreSummaryRequest(request, inputPath, settings, sources);
 

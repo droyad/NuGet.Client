@@ -38,32 +38,26 @@ namespace NuGet.Commands.Test
             }
         }
 
-        /// <summary>
-        /// If a packages argument is provided, <see cref="RestoreArgs.GetEffectiveGlobalPackagesFolder(ISettings, bool)"/>
-        /// should ignore the provided root path and any configuration information and resolve
-        /// relative to the current working directory.
-        /// </summary>
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RequestFactory_RestorePackagesArgRelativeToCwd(bool lowercase)
+        [Fact]
+        public void RequestFactory_RestorePackagesArgRelativeToCwd()
         {
+            // If a packages argument is provided, GetEffectiveGlobalPackagesFolder() should ignore
+            // the provided root path and any configuration information and resolve relative to the
+            // current working directory.
+
             // Arrange
             var globalPackagesFolder = "MyPackages";
-            var restoreArgs = new RestoreArgs
+            var restoreArgs = new RestoreArgs()
             {
                 GlobalPackagesFolder = globalPackagesFolder
             };
-            var expectedResolvedGlobalPackagesFolder = Path.GetFullPath(globalPackagesFolder);
 
             // Act
-            var resolvedGlobalPackagesFolder = restoreArgs.GetEffectiveGlobalPackagesFolder(
-                settings: null,
-                lowercase: lowercase);
+            var resolvedGlobalPackagesFolder = restoreArgs.GetEffectiveGlobalPackagesFolder("C:\\Dummy", null);
 
             // Assert
-            Assert.Equal(expectedResolvedGlobalPackagesFolder, resolvedGlobalPackagesFolder.Path);
-            Assert.Equal(lowercase, resolvedGlobalPackagesFolder.Lowercase);
+            var expectedResolvedGlobalPackagesFolder = Path.GetFullPath(globalPackagesFolder);
+            Assert.Equal(expectedResolvedGlobalPackagesFolder, resolvedGlobalPackagesFolder);
         }
 
         [Fact]

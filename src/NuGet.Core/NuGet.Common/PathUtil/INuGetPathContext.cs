@@ -11,12 +11,12 @@ namespace NuGet.Common
         /// <summary>
         /// User package folder directory.
         /// </summary>
-        VersionPackageFolder UserPackageFolder { get; }
+        string UserPackageFolder { get; }
 
         /// <summary>
         /// Fallback package folder locations.
         /// </summary>
-        IReadOnlyList<VersionPackageFolder> FallbackPackageFolders { get; }
+        IReadOnlyList<string> FallbackPackageFolders { get; }
 
         /// <summary>
         /// Http file cache.

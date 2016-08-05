@@ -1,7 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
@@ -70,15 +68,14 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_MissingArguments);
                     }
 
-                    var packagePath = arguments.Values[0];
-                    var sourcePath = source.Value();
-                    var lowercase = true;
-                    var apiKeyValue = apikey.Value();
-                    var symbolSourcePath = symbolSource.Value();
-                    var symbolApiKeyValue = symbolApiKey.Value();
-                    var disableBufferingValue = disableBuffering.HasValue();
-                    var noSymbolsValue = noSymbols.HasValue();
-                    var timeoutSeconds = 0;
+                    string packagePath = arguments.Values[0];
+                    string sourcePath = source.Value();
+                    string apiKeyValue = apikey.Value();
+                    string symbolSourcePath = symbolSource.Value();
+                    string symbolApiKeyValue = symbolApiKey.Value();
+                    bool disableBufferingValue = disableBuffering.HasValue();
+                    bool noSymbolsValue = noSymbols.HasValue();
+                    int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
                     {
@@ -94,7 +91,6 @@ namespace NuGet.CommandLine.XPlat
                             sourceProvider,
                             packagePath,
                             sourcePath,
-                            lowercase,
                             apiKeyValue,
                             symbolSourcePath,
                             symbolApiKeyValue,

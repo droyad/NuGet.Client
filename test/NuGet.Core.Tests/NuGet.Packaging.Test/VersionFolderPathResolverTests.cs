@@ -6,147 +6,140 @@ namespace NuGet.Packaging.Test
 {
     public class VersionFolderPathResolverTests
     {
-        [Theory]
-        [InlineData("nuget.packaging", "3.4.3-beta", true)]
-        [InlineData("NuGet.Packaging", "3.4.3-Beta", false)]
-        public void VersionFolderPathResolver_GetInstallPath(string id, string version, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetInstallPath()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetInstallPath(tc.Id, tc.Version);
 
             // Assert
-            Assert.Equal(Path.Combine(tc.PackagesPath, id, version), actual);
+            Assert.Equal(Path.Combine(tc.PackagesPath, "nuget.packaging", "3.4.3-beta"), actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", "3.4.3-beta", "nuget.packaging.3.4.3-beta.nupkg", true)]
-        [InlineData("NuGet.Packaging", "3.4.3-Beta", "NuGet.Packaging.3.4.3-Beta.nupkg", false)]
-        public void VersionFolderPathResolver_GetPackageFilePath(string id, string version, string file, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetPackageFilePath()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetPackageFilePath(tc.Id, tc.Version);
 
             // Assert
             Assert.Equal(
-                Path.Combine(tc.PackagesPath, id, version, file),
+                Path.Combine(
+                    tc.PackagesPath,
+                    "nuget.packaging",
+                    "3.4.3-beta",
+                    "nuget.packaging.3.4.3-beta.nupkg"),
                 actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", "3.4.3-beta", "nuget.packaging.nuspec", true)]
-        [InlineData("NuGet.Packaging", "3.4.3-Beta", "NuGet.Packaging.nuspec", false)]
-        public void VersionFolderPathResolver_GetManifestFilePath(string id, string version, string file, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetManifestFilePath()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetManifestFilePath(tc.Id, tc.Version);
 
             // Assert
             Assert.Equal(
-                Path.Combine(tc.PackagesPath, id, version, file),
+                Path.Combine(
+                    tc.PackagesPath, "nuget.packaging", "3.4.3-beta", "nuget.packaging.nuspec"),
                 actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", "3.4.3-beta", "nuget.packaging.3.4.3-beta.nupkg.sha512", true)]
-        [InlineData("NuGet.Packaging", "3.4.3-Beta", "NuGet.Packaging.3.4.3-Beta.nupkg.sha512", false)]
-        public void VersionFolderPathResolver_GetHashPath(string id, string version, string file, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetHashPath()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetHashPath(tc.Id, tc.Version);
 
             // Assert
             Assert.Equal(
-                Path.Combine(tc.PackagesPath, id, version, file),
+                Path.Combine(
+                    tc.PackagesPath,
+                    "nuget.packaging",
+                    "3.4.3-beta",
+                    "nuget.packaging.3.4.3-beta.nupkg.sha512"),
                 actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", "3.4.3-beta", true)]
-        [InlineData("NuGet.Packaging", "3.4.3-Beta", false)]
-        public void VersionFolderPathResolver_GetPackageDirectory(string id, string version, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetPackageDirectory()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetPackageDirectory(tc.Id, tc.Version);
 
             // Assert
-            Assert.Equal(Path.Combine(id, version), actual);
+            Assert.Equal(Path.Combine("nuget.packaging", "3.4.3-beta"), actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging.3.4.3-beta.nupkg", true)]
-        [InlineData("NuGet.Packaging.3.4.3-Beta.nupkg", false)]
-        public void VersionFolderPathResolver_GetPackageFileName(string file, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetPackageFileName()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetPackageFileName(tc.Id, tc.Version);
 
             // Assert
-            Assert.Equal(file, actual);
+            Assert.Equal("nuget.packaging.3.4.3-beta.nupkg", actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging.nuspec", true)]
-        [InlineData("NuGet.Packaging.nuspec", false)]
-        public void VersionFolderPathResolver_GetManifestFileName(string file, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetManifestFileName()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetManifestFileName(tc.Id, tc.Version);
 
             // Assert
-            Assert.Equal(file, actual);
+            Assert.Equal("nuget.packaging.nuspec", actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", true)]
-        [InlineData("NuGet.Packaging", false)]
-        public void VersionFolderPathResolver_GetVersionListPath(string directory, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetVersionListPath()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetVersionListPath(tc.Id);
 
             // Assert
             Assert.Equal(
-                Path.Combine(tc.PackagesPath, directory),
+                Path.Combine(
+                    tc.PackagesPath,
+                    "nuget.packaging"),
                 actual);
         }
 
-        [Theory]
-        [InlineData("nuget.packaging", true)]
-        [InlineData("NuGet.Packaging", false)]
-        public void VersionFolderPathResolver_GetVersionListDirectory(string directory, bool lowercase)
+        [Fact]
+        public void VersionFolderPathResolver_GetVersionListDirectory()
         {
             // Arrange
-            var tc = new TestContext { Lowercase = lowercase };
+            var tc = new TestContext();
 
             // Act
             var actual = tc.Target.GetVersionListDirectory(tc.Id);
 
             // Assert
-            Assert.Equal(directory, actual);
+            Assert.Equal("nuget.packaging", actual);
         }
 
         private class TestContext
@@ -157,16 +150,14 @@ namespace NuGet.Packaging.Test
                 PackagesPath = "prefix";
                 Id = "NuGet.Packaging";
                 Version = new NuGetVersion("3.04.3-Beta");
-                Lowercase = false;
             }
 
             public string Id { get; private set; }
             public string PackagesPath { get; set; }
             public NuGetVersion Version { get; set; }
-            public bool Lowercase { get; set; }
             public VersionFolderPathResolver Target
             {
-                get { return new VersionFolderPathResolver(PackagesPath, Lowercase); }
+                get { return new VersionFolderPathResolver(PackagesPath); }
             }
         }
     }

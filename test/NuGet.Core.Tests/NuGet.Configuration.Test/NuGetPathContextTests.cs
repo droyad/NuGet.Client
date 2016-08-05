@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -7,10 +6,8 @@ namespace NuGet.Configuration.Test
 {
     public class NuGetPathContextTests
     {
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void NuGetPathContext_LoadSettings(bool lowercase)
+        [Fact]
+        public void NuGetPathContext_LoadSettings()
         {
             // Arrange
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -27,11 +24,9 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var globalFolder = new VersionPackageFolder(Path.Combine(mockBaseDirectory, "global"), lowercase);
-
-                // Fallback folders are always lowercase.
-                var testFolder = new VersionPackageFolder(Path.Combine(mockBaseDirectory, "test"), lowercase: true);
-                var srcFolder = new VersionPackageFolder(Path.Combine(mockBaseDirectory, "src"), lowercase: true);
+                var testFolder = Path.Combine(mockBaseDirectory, "test");
+                var srcFolder = Path.Combine(mockBaseDirectory, "src");
+                var globalFolder = Path.Combine(mockBaseDirectory, "global");
 
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
@@ -39,7 +34,7 @@ namespace NuGet.Configuration.Test
                 var http = SettingsUtility.GetHttpCacheFolder();
 
                 // Act
-                var pathContext = NuGetPathContext.Create(settings, lowercase);
+                var pathContext = NuGetPathContext.Create(settings);
 
                 // Assert
                 Assert.Equal(2, pathContext.FallbackPackageFolders.Count);
@@ -50,19 +45,17 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void NuGetPathContext_LoadDefaultSettings(bool lowercase)
+        [Fact]
+        public void NuGetPathContext_LoadDefaultSettings()
         {
             // Arrange
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var globalFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance, lowercase: lowercase);
+                var globalFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
                 var http = SettingsUtility.GetHttpCacheFolder();
 
                 // Act
-                var pathContext = NuGetPathContext.Create(NullSettings.Instance, lowercase);
+                var pathContext = NuGetPathContext.Create(NullSettings.Instance);
 
                 // Assert
                 Assert.Equal(0, pathContext.FallbackPackageFolders.Count);

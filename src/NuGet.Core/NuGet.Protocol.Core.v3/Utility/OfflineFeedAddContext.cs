@@ -3,28 +3,28 @@
 
 using System;
 using System.Globalization;
-using NuGet.Common;
+using NuGet.Protocol;
 
 namespace NuGet.Protocol.Core.Types
 {
     public class OfflineFeedAddContext
     {
         public string PackagePath { get; }
-        public VersionPackageFolder Folder { get; }
+        public string Source { get; }
+        public Common.ILogger Logger { get; }
         public bool ThrowIfSourcePackageIsInvalid { get; }
         public bool ThrowIfPackageExistsAndInvalid { get; }
         public bool ThrowIfPackageExists { get; }
         public bool Expand { get; }
-        public ILogger Logger { get; }
 
         public OfflineFeedAddContext(
             string packagePath,
-            VersionPackageFolder folder,
+            string source,
+            Common.ILogger logger,
             bool throwIfSourcePackageIsInvalid,
             bool throwIfPackageExistsAndInvalid,
             bool throwIfPackageExists,
-            bool expand,
-            ILogger logger)
+            bool expand)
         {
             if (string.IsNullOrEmpty(packagePath))
             {
@@ -33,16 +33,11 @@ namespace NuGet.Protocol.Core.Types
                     nameof(packagePath)));
             }
 
-            if (folder == null)
-            {
-                throw new ArgumentNullException(nameof(folder));
-            }
-
-            if (string.IsNullOrEmpty(folder.Path))
+            if (string.IsNullOrEmpty(source))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Argument_Cannot_Be_Null_Or_Empty, 
-                    nameof(folder.Path)));
+                    nameof(source)));
             }
 
             if (logger == null)
@@ -51,7 +46,7 @@ namespace NuGet.Protocol.Core.Types
             }
 
             PackagePath = packagePath;
-            Folder = folder;
+            Source = source;
             Logger = logger;
             ThrowIfSourcePackageIsInvalid = throwIfSourcePackageIsInvalid;
             ThrowIfPackageExists = throwIfPackageExists;

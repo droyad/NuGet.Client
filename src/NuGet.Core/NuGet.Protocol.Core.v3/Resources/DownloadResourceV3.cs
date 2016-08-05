@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -63,7 +64,7 @@ namespace NuGet.Protocol
         /// 2. A url will be constructed for the flat container location if the source has that resource.
         /// 3. The download url will be found in the registration blob as a fallback.
         /// </summary>
-        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
+        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, Common.ILogger log, CancellationToken token)
         {
             Uri downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;
@@ -99,7 +100,7 @@ namespace NuGet.Protocol
 
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
-            VersionPackageFolder folder,
+            ISettings settings,
             ILogger logger,
             CancellationToken token)
         {
@@ -108,9 +109,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(identity));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (logger == null)
@@ -122,13 +123,7 @@ namespace NuGet.Protocol
 
             if (uri != null)
             {
-                return await GetDownloadResultUtility.GetDownloadResultAsync(
-                    _client,
-                    identity,
-                    uri,
-                    folder,
-                    logger: logger,
-                    token: token);
+                return await GetDownloadResultUtility.GetDownloadResultAsync(_client, identity, uri, settings, logger, token);
             }
 
             return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);

@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -16,29 +17,30 @@ namespace NuGet.Protocol
 {
     public static class GlobalPackagesFolderUtility
     {
-        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, VersionPackageFolder folder)
+        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, ISettings settings)
         {
             if (packageIdentity == null)
             {
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
-            var pathResolver = new VersionFolderPathResolver(folder);
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
-            var hashPath = pathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+            var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
             if (File.Exists(hashPath))
             {
-                var installPath = pathResolver.GetInstallPath(
+                var installPath = defaultPackagePathResolver.GetInstallPath(
                     packageIdentity.Id,
                     packageIdentity.Version);
 
-                var nupkgPath = pathResolver.GetPackageFilePath(
+                var nupkgPath = defaultPackagePathResolver.GetPackageFilePath(
                     packageIdentity.Id,
                     packageIdentity.Version);
 
@@ -69,10 +71,9 @@ namespace NuGet.Protocol
             return null;
         }
 
-        public static async Task<DownloadResourceResult> AddPackageAsync(
-            PackageIdentity packageIdentity,
+        public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
             Stream packageStream,
-            VersionPackageFolder folder,
+            ISettings settings,
             ILogger logger,
             CancellationToken token)
         {
@@ -86,10 +87,12 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(packageStream));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
@@ -97,7 +100,7 @@ namespace NuGet.Protocol
 
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
-                folder,
+                globalPackagesFolder,
                 logger,
                 packageSaveMode: PackageSaveMode.Defaultv3,
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
@@ -107,8 +110,7 @@ namespace NuGet.Protocol
                 versionFolderPathContext,
                 token: token);
 
-            var package = GetPackage(packageIdentity, folder);
-
+            var package = GetPackage(packageIdentity, settings);
             Debug.Assert(package.PackageStream.CanSeek);
             Debug.Assert(package.PackageReader != null);
 

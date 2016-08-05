@@ -27,8 +27,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
-            VersionPackageFolder folder,
-            ILogger logger,
+            Configuration.ISettings settings,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sources == null)
@@ -41,9 +41,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             var failedTasks = new List<Task<DownloadResourceResult>>();
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        var task = GetDownloadResourceResultAsync(source, packageIdentity, folder, logger, linkedTokenSource.Token);
+                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
                         tasksLookup.Add(task, source);
                         tasks.Add(task);
                     }
@@ -167,8 +167,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
-            VersionPackageFolder folder,
-            ILogger logger,
+            Configuration.ISettings settings,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sourceRepository == null)
@@ -181,9 +181,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (folder == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(folder));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement
             {
                 result = await downloadResource.GetDownloadResourceResultAsync(
                    packageIdentity,
-                   folder,
+                   settings,
                    logger,
                    token);
             }

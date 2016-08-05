@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
@@ -10,31 +9,21 @@ namespace NuGet.ProjectModel
 {
     public class ToolPathResolver
     {
-        private readonly VersionPackageFolder _folder;
+        private readonly string _packagesDirectory;
 
-        public ToolPathResolver(VersionPackageFolder folder)
+        public ToolPathResolver(string packagesDirectory)
         {
-            _folder = folder;
+            _packagesDirectory = packagesDirectory;
         }
 
         public string GetLockFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
         {
-            var versionString = version.ToNormalizedString();
-            var frameworkString = framework.GetShortFolderName();
-
-            if (_folder.Lowercase)
-            {
-                packageId = packageId.ToLowerInvariant();
-                versionString = versionString.ToLowerInvariant();
-                frameworkString = frameworkString.ToLowerInvariant();
-            }
-
             return Path.Combine(
-                _folder.Path,
+                _packagesDirectory,
                 ".tools",
-                packageId,
-                versionString,
-                frameworkString,
+                packageId.ToLowerInvariant(),
+                version.ToNormalizedString().ToLowerInvariant(),
+                framework.GetShortFolderName(),
                 LockFileFormat.LockFileName);
         }
     }

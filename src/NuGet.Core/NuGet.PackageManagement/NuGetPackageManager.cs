@@ -41,15 +41,7 @@ namespace NuGet.PackageManagement
 
         private ISolutionManager SolutionManager { get; }
 
-        private ISettings Settings { get; }
-
-        private VersionPackageFolder GlobalPackagesFolder
-        {
-            get
-            {
-                return SettingsUtility.GetGlobalPackagesFolder(Settings, lowercase: true);
-            }
-        }
+        private Configuration.ISettings Settings { get; }
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -74,7 +66,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetPackageManager(
                 ISourceRepositoryProvider sourceRepositoryProvider,
-                ISettings settings,
+                Configuration.ISettings settings,
                 string packagesFolderPath)
             : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)
         {
@@ -82,7 +74,7 @@ namespace NuGet.PackageManagement
 
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
+            Configuration.ISettings settings,
             string packagesFolderPath,
             bool excludeVersion)
         {
@@ -113,7 +105,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetPackageManager(
                 ISourceRepositoryProvider sourceRepositoryProvider,
-                ISettings settings,
+                Configuration.ISettings settings,
                 ISolutionManager solutionManager,
                 IDeleteOnRestartManager deleteOnRestartManager)
         : this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, excludeVersion: false)
@@ -122,7 +114,7 @@ namespace NuGet.PackageManagement
 
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
+            Configuration.ISettings settings,
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
             bool excludeVersion)
@@ -168,18 +160,17 @@ namespace NuGet.PackageManagement
                     var sources = new List<SourceRepository>();
 
                     // Read package folders from settings
-                    var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
-
-                    var folders = new List<VersionPackageFolder>();
+                    var pathContext = NuGetPathContext.Create(Settings);
+                    var folders = new List<string>();
                     folders.Add(pathContext.UserPackageFolder);
                     folders.AddRange(pathContext.FallbackPackageFolders);
-                    
+
                     foreach (var folder in folders)
                     {
                         // Create a repo for each folder
                         var source = SourceRepositoryProvider.CreateRepository(
-                            new PackageSource(folder.Path),
-                            folder.Lowercase ? FeedType.FileSystemV3 : FeedType.FileSystemV3OriginalCase);
+                            new PackageSource(folder),
+                            FeedType.FileSystemV3);
 
                         sources.Add(source);
                     }
@@ -1712,7 +1703,7 @@ namespace NuGet.PackageManagement
                         downloadTasks = await PackagePreFetcher.GetPackagesAsync(
                             actionsList,
                             PackagesFolderNuGetProject,
-                            GlobalPackagesFolder,
+                            Settings,
                             logger,
                             downloadTokenSource.Token);
 
@@ -1948,7 +1939,7 @@ namespace NuGet.PackageManagement
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
-            var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
+            var pathContext = NuGetPathContext.Create(Settings);
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -2126,7 +2117,7 @@ namespace NuGet.PackageManagement
                         restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
-                var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
+                var pathContext = NuGetPathContext.Create(Settings);
 
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
                 foreach (var package in sortedPackages)
@@ -2238,7 +2229,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     var packageFolderPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                            GlobalPackagesFolder,
+                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings),
                                             nuGetProjectContext.ExecutionContext.DirectInstall);
 
                     if (Directory.Exists(packageFolderPath))
@@ -2287,7 +2278,7 @@ namespace NuGet.PackageManagement
 
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources,
                 packageIdentity,
-                GlobalPackagesFolder,
+                Settings,
                 new ProjectContextLogger(nuGetProjectContext),
                 token))
             {

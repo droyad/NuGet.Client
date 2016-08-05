@@ -582,15 +582,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Use legacy behavior of the global packages folder. This means that ID and version folders have original case instead of lowercase as well and not observing fallback folders..
-        /// </summary>
-        public static string Switch_LegacyPackageFolder_Description {
-            get {
-                return ResourceManager.GetString("Switch_LegacyPackageFolder_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
         public static string Switch_Verbosity {

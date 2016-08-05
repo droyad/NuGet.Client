@@ -21,23 +21,22 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Returns distinct ordered <see cref="VersionPackageFolder"/> instances based on the file system case
-        /// sensitivity.
+        /// Returns distinct orderd paths based on the file system case sensitivity.
         /// </summary>
-        public static IEnumerable<VersionPackageFolder> GetUniqueFoldersBasedOnOS(IEnumerable<VersionPackageFolder> folders)
+        public static IEnumerable<string> GetUniquePathsBasedOnOS(IEnumerable<string> paths)
         {
-            if (folders == null)
+            if (paths == null)
             {
-                throw new ArgumentNullException(nameof(folders));
+                throw new ArgumentNullException(nameof(paths));
             }
 
             var unique = new HashSet<string>(GetStringComparerBasedOnOS());
 
-            foreach (var folder in folders)
+            foreach (var path in paths)
             {
-                if (unique.Add(folder.Path))
+                if (unique.Add(path))
                 {
-                    yield return folder;
+                    yield return path;
                 }
             }
 

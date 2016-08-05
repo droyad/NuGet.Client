@@ -56,7 +56,7 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings, lowercase: true);
+                        var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
 
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {

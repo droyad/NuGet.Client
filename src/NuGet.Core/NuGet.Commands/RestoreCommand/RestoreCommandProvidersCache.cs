@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -16,45 +15,49 @@ namespace NuGet.Commands
     /// </summary>
     public class RestoreCommandProvidersCache
     {
+        // Paths are case insensitive on windows
+        private static readonly StringComparer _comparer 
+            = RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
         private readonly ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider> _remoteProviders
             = new ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider>();
 
-        private readonly ConcurrentDictionary<VersionPackageFolder, IRemoteDependencyProvider> _localProvider
-            = new ConcurrentDictionary<VersionPackageFolder, IRemoteDependencyProvider>(VersionPackageFolderComparer.Default);
+        private readonly ConcurrentDictionary<string, IRemoteDependencyProvider> _localProvider
+            = new ConcurrentDictionary<string, IRemoteDependencyProvider>(_comparer);
 
-        private readonly ConcurrentDictionary<VersionPackageFolder, NuGetv3LocalRepository> _globalCache
-            = new ConcurrentDictionary<VersionPackageFolder, NuGetv3LocalRepository>(VersionPackageFolderComparer.Default);
+        private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
+            = new ConcurrentDictionary<string, NuGetv3LocalRepository>(_comparer);
 
         public RestoreCommandProviders GetOrCreate(
-            VersionPackageFolder globalFolder,
-            IReadOnlyList<VersionPackageFolder> fallbackFolders,
+            string globalPackagesPath,
+            IReadOnlyList<string> fallbackPackagesPaths,
             IReadOnlyList<SourceRepository> sources,
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalCache = _globalCache.GetOrAdd(globalFolder, folder => new NuGetv3LocalRepository(folder));
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path));
 
-            var local = _localProvider.GetOrAdd(globalFolder, folder =>
+            var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
                 // Create a v3 file system source
-                var pathSource = Repository.Factory.GetCoreV3(folder);
+                var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 // Do not throw or warn for global cache 
                 return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
-            var fallbackRepositories = new List<NuGetv3LocalRepository>();
+            var fallbackFolders = new List<NuGetv3LocalRepository>();
 
-            foreach (var fallbackFolder in fallbackFolders)
+            foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackFolder, (path) => new NuGetv3LocalRepository(path));
-                fallbackRepositories.Add(cache);
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path));
+                fallbackFolders.Add(cache);
 
-                var localProvider = _localProvider.GetOrAdd(fallbackFolder, folder =>
+                var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
                 {
                     // Create a v3 file system source
-                    var pathSource = Repository.Factory.GetCoreV3(folder);
+                    var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                     // Throw for fallback package folders
                     return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
@@ -71,7 +74,7 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackRepositories, localProviders, remoteProviders, cacheContext);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, cacheContext);
         }
     }
 }

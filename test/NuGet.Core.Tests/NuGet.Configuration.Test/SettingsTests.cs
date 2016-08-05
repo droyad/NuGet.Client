@@ -2139,10 +2139,8 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GetGlobalPackagesFolder_FromNuGetConfig(bool lowercase)
+        [Fact]
+        public void GetGlobalPackagesFolder_FromNuGetConfig()
         {
             // Arrange
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2159,18 +2157,15 @@ namespace NuGet.Configuration.Test
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase);
+                var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 // Assert
-                Assert.Equal(Path.Combine(mockBaseDirectory, "a"), globalPackagesFolder.Path);
-                Assert.Equal(lowercase, globalPackagesFolder.Lowercase);
+                Assert.Equal(Path.Combine(mockBaseDirectory, "a"), globalPackagesFolderPath);
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GetGlobalPackagesFolder_FromNuGetConfig_RelativePath(bool lowercase)
+        [Fact]
+        public void GetGlobalPackagesFolder_FromNuGetConfig_RelativePath()
         {
             // Arrange
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2188,18 +2183,15 @@ namespace NuGet.Configuration.Test
                 var expected = Path.GetFullPath(Path.Combine(mockBaseDirectory, @"..\..\NuGetPackages"));
 
                 // Act
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase);
+                var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 // Assert
-                Assert.Equal(expected, globalPackagesFolder.Path);
-                Assert.Equal(lowercase, globalPackagesFolder.Lowercase);
+                Assert.Equal(expected, globalPackagesFolderPath);
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GetGlobalPackagesFolder_Default(bool lowercase)
+        [Fact]
+        public void GetGlobalPackagesFolder_Default()
         {
             // Arrange
 #if !IS_CORECLR
@@ -2218,11 +2210,10 @@ namespace NuGet.Configuration.Test
             var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
 
             // Act
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(new NullSettings(), lowercase);
+            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(new NullSettings());
 
             // Assert
-            Assert.Equal(expectedPath, globalPackagesFolder.Path);
-            Assert.Equal(lowercase, globalPackagesFolder.Lowercase);
+            Assert.Equal(expectedPath, globalPackagesFolderPath);
         }
 
         [Fact]

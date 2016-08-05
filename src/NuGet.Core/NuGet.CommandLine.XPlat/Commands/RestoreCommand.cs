@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -19,7 +18,7 @@ namespace NuGet.CommandLine.XPlat
             CommandLineApplication cmdApp,
             Func<CommandOutputLogger> getLogger)
         {
-            cmdApp.Command("restore", restore =>
+            cmdApp.Command("restore", (Action<CommandLineApplication>)(restore =>
             {
                 restore.Description = Strings.Restore_Description;
                 restore.HelpOption(XPlatUtility.HelpOption);
@@ -79,11 +78,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_IgnoreFailedSource_Description,
                     CommandOptionType.NoValue);
 
-                var legacyPackageFolder = restore.Option(
-                    "--legacy-package-folder",
-                    Strings.Switch_LegacyPackageFolder_Description,
-                    CommandOptionType.NoValue);
-
                 restore.OnExecute(async () =>
                 {
                     var log = getLogger();
@@ -106,14 +100,13 @@ namespace NuGet.CommandLine.XPlat
                         ISettings defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                         CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
 
-                        var restoreArgs = new RestoreArgs
+                        var restoreContext = new RestoreArgs()
                         {
                             CacheContext = cacheContext,
                             LockFileVersion = LockFileFormat.Version,
                             ConfigFile = configFile.HasValue() ? configFile.Value() : null,
                             DisableParallel = disableParallel.HasValue(),
                             GlobalPackagesFolder = packagesDirectory.HasValue() ? packagesDirectory.Value() : null,
-                            LowercaseGlobalPackagesFolder = legacyPackageFolder.HasValue(),
                             Inputs = new List<string>(argRoot.Values),
                             Log = log,
                             MachineWideSettings = new XPlatMachineWideSetting(),
@@ -128,15 +121,15 @@ namespace NuGet.CommandLine.XPlat
                             var runtimeOSname = PlatformApis.GetRuntimeOsName();
                             var os = PlatformApis.GetOSName();
                             var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(os, runtimeOSname);
-                            restoreArgs.FallbackRuntimes.UnionWith(defaultRuntimes);
+                            restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
                         }
 
-                        if (restoreArgs.DisableParallel)
+                        if (restoreContext.DisableParallel)
                         {
                             HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                         }
 
-                        var restoreSummaries = await RestoreRunner.Run(restoreArgs);
+                        var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
                         // Summary
                         RestoreSummary.Log(log, restoreSummaries);
@@ -144,7 +137,7 @@ namespace NuGet.CommandLine.XPlat
                         return restoreSummaries.All(x => x.Success) ? 0 : 1;
                     }
                 });
-            });
+            }));
         }
     }
 }

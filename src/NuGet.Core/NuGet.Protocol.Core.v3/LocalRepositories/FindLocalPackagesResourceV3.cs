@@ -11,19 +11,16 @@ namespace NuGet.Protocol
     /// </summary>
     public class FindLocalPackagesResourceV3 : FindLocalPackagesResource
     {
-        private readonly VersionPackageFolder _folder;
-
-        public FindLocalPackagesResourceV3(VersionPackageFolder folder)
+        public FindLocalPackagesResourceV3(string root)
         {
-            Root = folder.Path;
-            _folder = folder;
+            Root = root;
         }
 
         public override IEnumerable<LocalPackageInfo> FindPackagesById(string id, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackagesV3(_folder, id, logger);
+            return LocalFolderUtility.GetPackagesV3(Root, id, logger);
         }
 
         public override LocalPackageInfo GetPackage(Uri path, ILogger logger, CancellationToken token)
@@ -37,14 +34,14 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackageV3(_folder, identity, logger);
+            return LocalFolderUtility.GetPackageV3(Root, identity, logger);
         }
 
         public override IEnumerable<LocalPackageInfo> GetPackages(ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackagesV3(_folder, logger);
+            return LocalFolderUtility.GetPackagesV3(Root, logger);
         }
     }
 }

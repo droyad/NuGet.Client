@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.Commands
                     PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
                     break;
                 case LocalResourceName.GlobalPackagesFolder:
-                    PrintLocalResourcePath(_globalPackagesResourceName, GetGlobalPackagesFolderPath());
+                    PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     break;
                 case LocalResourceName.Temp:
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine.Commands
                 case LocalResourceName.All:
                     PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
-                    PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings, lowercase: true).Path);
+                    PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
                 default:
@@ -84,13 +84,6 @@ namespace NuGet.CommandLine.Commands
                         LocalizedResourceManager.GetString(
                             nameof(NuGetResources.LocalsCommand_InvalidLocalResourceName)));
             }
-        }
-
-        private string GetGlobalPackagesFolderPath()
-        {
-            return SettingsUtility
-                .GetGlobalPackagesFolder(Settings, lowercase: true)
-                .Path;
         }
 
         private void PrintLocalResourcePath(string resourceName, string path)
@@ -158,7 +151,7 @@ namespace NuGet.CommandLine.Commands
         private bool ClearNuGetGlobalPackagesFolder()
         {
             var success = true;
-            var globalPackagesFolderPath = GetGlobalPackagesFolderPath();
+            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(Settings);
 
             Console.WriteLine(
                 LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearingNuGetGlobalPackagesCache)),
