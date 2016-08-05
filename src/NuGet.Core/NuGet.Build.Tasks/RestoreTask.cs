@@ -33,26 +33,51 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string RestorePackagesPath { get; set; }
 
+        /// <summary>
+        /// Disable parallel project restores and downloads
+        /// </summary>
         public bool RestoreDisableParallel { get; set; }
 
+        /// <summary>
+        /// NuGet.Config path
+        /// </summary>
         public string RestoreConfigFile { get; set; }
 
+        /// <summary>
+        /// Disable the web cache
+        /// </summary>
         public bool RestoreNoCache { get; set; }
 
-        public bool RestoreIgnoreFailedSource { get; set; }
-
-        public bool RestoreForceEnglishOutput { get; set; }
+        /// <summary>
+        /// Ignore errors from package sources
+        /// </summary>
+        public bool RestoreIgnoreFailedSources { get; set; }
 
         public override bool Execute()
         {
+            if (RestoreGraphItems.Length < 1)
+            {
+                Log.LogWarning("Unable to find a project to restore!");
+                return true;
+            }
+
             var log = new MSBuildLogger(Log);
+
+            // Log inputs
+            log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
+            log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
+            log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
+            log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
+            log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
+            log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
+
             var graphLines = RestoreGraphItems;
             var providerCache = new RestoreCommandProvidersCache();
 
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.NoCache = RestoreNoCache;
-                cacheContext.IgnoreFailedSources = RestoreIgnoreFailedSource;
+                cacheContext.IgnoreFailedSources = RestoreIgnoreFailedSources;
 
                 // Pre-loaded request provider containing the graph file
                 var providers = new List<IPreLoadedRestoreRequestProvider>();
@@ -94,7 +119,10 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        public static string GetNullForEmpty(string s)
+        /// <summary>
+        /// Convert empty strings to null
+        /// </summary>
+        private static string GetNullForEmpty(string s)
         {
             return string.IsNullOrEmpty(s) ? null : s;
         }

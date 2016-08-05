@@ -31,8 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreDisableParallel="$(RestoreDisableParallel)"
       RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
-      RestoreIgnoreFailedSource="$(RestoreIgnoreFailedSource)"
-      RestoreForceEnglishOutput="$(RestoreForceEnglishOutput)"
+      RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
     />
   </Target>
 
@@ -66,11 +65,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreGraph" DependsOnTargets="_LoadRestoreGraphEntryPoints">
-    <Message Text="Generating dg files" Importance="low" />
+    <Message Text="Generating dg file" Importance="low" />
     <Message Text="%(RestoreGraphProjectInputItems.Identity)" Importance="low" />
-
-    <!-- Validate -->
-    <Error Text="There are no projects to restore!" Condition="@(RestoreGraphProjectInputItems) == ''"/>
 
     <!-- Walk the project references for each project -->
     <MsBuild
@@ -89,6 +85,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_RestoreGraphEntry" />
     </MsBuild>
+
+    <Message Text="Restore dg file output:" Importance="low" />
+    <Message Text="%(_RestoreGraphEntry.Identity)" Importance="low" />
   </Target>
 
   <!--
@@ -115,14 +114,28 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RestoreGraphProjectFullPathForOutput Include="$(RestoreGraphAbsoluteProjectPaths)" />
     </ItemGroup>
 
+    <!-- Determine the restore output path -->
     <PropertyGroup>
       <RestoreOutputPath Condition=" $(RestoreOutputPath) == '' " >$(IntermediateOutputPath)</RestoreOutputPath>
+    </PropertyGroup>
+
+    <ConvertToAbsolutePath Paths="$(IntermediateOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+
+    <!-- Project restore type -->
+    <PropertyGroup Condition=" '$(RestoreOutputType)' == '' ">
+      <!-- Check for UAP projects -->
+      <RestoreOutputType Condition=" '$(TargetPlatformIdentifier)' == 'UAP' ">uap</RestoreOutputType>
+      <!-- Default to netcore if UAP is not specified -->
+      <RestoreOutputType Condition=" '$(TargetPlatformIdentifier)' != 'UAP' ">netcore</RestoreOutputType>
     </PropertyGroup>
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(RestoreGraphWriteEntryPoint)' == 'true' ">
       <_RestoreGraphEntry Include="#:$(MSBuildProjectFullPath)" />
-      <_RestoreGraphEntry Include="+:RestoreOutputPath|$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(RestoreOutputPath)))" />
+      <_RestoreGraphEntry Include="+:RestoreOutputType|$(RestoreOutputType)" />
+      <_RestoreGraphEntry Include="+:RestoreOutputPath|$(RestoreOutputAbsolutePath)" Condition=" '$(RestoreOutputAbsolutePath)' != '' " />
     </ItemGroup>
 
     <!-- Project to project entry -->
