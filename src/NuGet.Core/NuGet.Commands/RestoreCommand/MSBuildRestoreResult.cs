@@ -84,6 +84,17 @@ namespace NuGet.Commands
 
         public void Commit(ILogger log)
         {
+            // Ensure the directories exists
+            if (!Success || Targets.Count > 0 || Props.Count > 0)
+            {
+                var outputDirs = new HashSet<string>() { Path.GetDirectoryName(TargetsPath), Path.GetDirectoryName(PropsPath) };
+
+                foreach (var dir in outputDirs)
+                {
+                    Directory.CreateDirectory(dir);
+                }
+            }
+
             if (!Success)
             {
                 // Write a target containing an error 

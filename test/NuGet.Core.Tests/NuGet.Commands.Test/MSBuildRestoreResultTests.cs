@@ -30,7 +30,7 @@ namespace NuGet.Commands.Test
                     var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
 
                     var propsName = $"{projectName}.nuget.props";
-                    var propsPath = Path.Combine(randomProjectDirectory, targetsName);
+                    var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
                     var msBuildRestoreResult = new MSBuildRestoreResult(
                         targetsPath,
