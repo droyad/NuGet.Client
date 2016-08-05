@@ -1950,8 +1950,10 @@ namespace NuGet.PackageManagement
             {
                 cacheContext.ListMaxAge = DateTimeOffset.UtcNow;
 
+                var lowercase = true;
                 var providers = RestoreCommandProviders.Create(
                     pathContext.UserPackageFolder,
+                    lowercase,
                     pathContext.FallbackPackageFolders,
                     sources,
                     cacheContext,

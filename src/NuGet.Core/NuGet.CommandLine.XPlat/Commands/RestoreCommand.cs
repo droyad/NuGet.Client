@@ -1,8 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -78,6 +79,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_IgnoreFailedSource_Description,
                     CommandOptionType.NoValue);
 
+                var legacyPackagesDirectoryOption = restore.Option(
+                    "--legacy-packages-directory",
+                    Strings.Restore_Switch_LegacyPackagesDirectory_Description,
+                    CommandOptionType.NoValue);
+
                 restore.OnExecute(async () =>
                 {
                     var log = getLogger();
@@ -88,9 +94,11 @@ namespace NuGet.CommandLine.XPlat
 
                     using (var cacheContext = new SourceCacheContext())
                     {
+                        var legacyPackagesDirectory = legacyPackagesDirectoryOption.HasValue();
+
                         cacheContext.NoCache = noCache.HasValue();
                         cacheContext.IgnoreFailedSources = ignoreFailedSources.HasValue();
-                        var providerCache = new RestoreCommandProvidersCache();
+                        var providerCache = new RestoreCommandProvidersCache(lowercase: !legacyPackagesDirectory);
 
                         // Ordered request providers
                         var providers = new List<IRestoreRequestProvider>();

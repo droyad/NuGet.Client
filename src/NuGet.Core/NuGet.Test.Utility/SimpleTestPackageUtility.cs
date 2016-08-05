@@ -301,18 +301,27 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
         {
+            var lowercase = true;
+            await CreateFolderFeedV3(root, lowercase, saveMode, contexts);
+        }
+
+        /// <summary>
+        /// Create a v3 folder of nupkgs
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, bool lowercase, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
+        {
             using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 CreatePackages(tempRoot, contexts);
 
-                await CreateFolderFeedV3(root, saveMode, Directory.GetFiles(tempRoot));
+                await CreateFolderFeedV3(root, lowercase, saveMode, Directory.GetFiles(tempRoot));
             }
         }
 
         /// <summary>
         /// Create a v3 folder of nupkgs
         /// </summary>
-        public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
+        public static async Task CreateFolderFeedV3(string root, bool lowercase, PackageSaveMode saveMode, params string[] nupkgPaths)
         {
             var pathResolver = new VersionFolderPathResolver(root);
 
@@ -334,6 +343,7 @@ namespace NuGet.Test.Utility
                             new VersionFolderPathContext(
                                 identity,
                                 root,
+                                lowercase,
                                 NullLogger.Instance,
                                 saveMode,
                                 XmlDocFileSaveMode.None),

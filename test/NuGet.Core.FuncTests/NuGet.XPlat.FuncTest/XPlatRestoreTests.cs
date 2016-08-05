@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -335,6 +336,71 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(1, exitCode);
                 Assert.Equal(1, log.Errors);
                 Assert.Contains(fallbackDir1, log.ShowErrors());
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Restore_RespectsLegacyPackagesDirectorySwitch(bool useSwitch)
+        {
+            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
+                var spec = XPlatTestUtils.BasicConfigNetCoreApp;
+
+                XPlatTestUtils.AddDependency(spec, "PackageA", "1.0.0-Beta");
+                XPlatTestUtils.AddDependency(spec, "PackageB", "2.0.0-Beta");
+                XPlatTestUtils.WriteJson(spec, specPath);
+
+                var packageA = new SimpleTestPackageContext("PackageA", "1.0.0-Beta");
+                var packageB = new SimpleTestPackageContext("PackageB", "2.0.0-Beta");
+                
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    sourceDir,
+                    PackageSaveMode.Defaultv3,
+                    packageA,
+                    packageB);
+
+                var log = new TestCommandOutputLogger();
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{packagesDir}"" />
+    </config>
+    <packageSources>
+        <add key=""a"" value=""{sourceDir}"" />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(projectDir, "NuGet.Config"), config);
+
+                var args = new List<string>
+                {
+                    "restore",
+                    projectDir
+                };
+
+                if (useSwitch)
+                {
+                    args.Add("--legacy-packages-directory");
+                }
+
+                // Act
+                var exitCode = Program.MainInternal(args.ToArray(), log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(0, log.Errors);
+                Assert.Equal(0, log.Warnings);
+                Assert.Equal(2, Directory.GetDirectories(packagesDir).Length);
+
+                var resolver = new VersionFolderPathResolver(packagesDir, lowercase: !useSwitch);
+                Assert.True(File.Exists(resolver.GetPackageFilePath("PackageA", NuGetVersion.Parse("1.0.0-Beta"))));
+                Assert.True(File.Exists(resolver.GetPackageFilePath("PackageB", NuGetVersion.Parse("2.0.0-Beta"))));
             }
         }
     }

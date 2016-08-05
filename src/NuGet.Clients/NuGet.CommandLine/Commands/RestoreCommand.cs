@@ -104,7 +104,7 @@ namespace NuGet.CommandLine
                 {
                     var restoreContext = restoreInputs.RestoreV3Context;
 
-                    var providerCache = new RestoreCommandProvidersCache();
+                    var providerCache = new RestoreCommandProvidersCache(lowercase: true);
 
                     // Add restore args to the restore context
                     cacheContext.NoCache = NoCache;

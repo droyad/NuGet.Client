@@ -352,7 +352,7 @@ namespace NuGetVSExtension
                         ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
                         // Cache resources between requests
-                        var providerCache = new RestoreCommandProvidersCache();
+                        var providerCache = new RestoreCommandProvidersCache(lowercase: true);
                         var tasks = new List<Task<KeyValuePair<string, Exception>>>();
                         var maxTasks = 4;
 

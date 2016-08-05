@@ -63,7 +63,10 @@ namespace NuGet.PackageManagement
             {
                 cacheContextModifier(cacheContext);
 
-                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                var lowercase = true;
+                var providers = RestoreCommandProviders.Create(
+                    effectiveGlobalPackagesFolder,
+                    lowercase,
                     fallbackPackageFolders,
                     sources,
                     cacheContext,

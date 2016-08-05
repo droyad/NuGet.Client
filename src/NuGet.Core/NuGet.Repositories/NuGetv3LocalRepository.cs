@@ -22,13 +22,34 @@ namespace NuGet.Repositories
 
         public VersionFolderPathResolver PathResolver { get; }
 
-        public NuGetv3LocalRepository(string path)
+        public NuGetv3LocalRepository(string path, bool lowercase)
         {
             RepositoryRoot = path;
-            PathResolver = new VersionFolderPathResolver(path);
+            Lowercase = lowercase;
+            PathResolver = new VersionFolderPathResolver(path, lowercase);
         }
 
         public string RepositoryRoot { get; }
+
+        public bool Lowercase { get; }
+
+        public LocalPackageInfo FindPackage(string packageId, NuGetVersion version)
+        {
+            var package = FindPackagesById(packageId)
+                .FirstOrDefault(localPackage => localPackage.Version == version);
+
+            if (package == null)
+            {
+                return null;
+            }
+
+            return new LocalPackageInfo(
+                packageId,
+                version,
+                package.ExpandedPath,
+                package.ManifestPath,
+                package.ZipPath);
+        }
 
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
         {

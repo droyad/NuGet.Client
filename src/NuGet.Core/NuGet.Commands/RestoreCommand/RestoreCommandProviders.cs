@@ -78,26 +78,35 @@ namespace NuGet.Commands
 
         public static RestoreCommandProviders Create(
             string globalFolderPath,
+            bool lowercase,
             IEnumerable<string> fallbackPackageFolderPaths,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
+            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, lowercase);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
-            var localProviders = new List<IRemoteDependencyProvider>()
+            var localProviders = new List<IRemoteDependencyProvider>();
+            if (lowercase)
             {
-                // Do not throw or warn for gloabal cache
-                new SourceRepositoryDependencyProvider(globalPackagesSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true)
-            };
+                // Do not throw or warn for global cache
+                var globalPackagesProvider = new SourceRepositoryDependencyProvider(
+                    globalPackagesSource,
+                    log,
+                    cacheContext,
+                    ignoreFailedSources: true,
+                    ignoreWarning: true);
+
+                localProviders.Add(globalPackagesProvider);
+            }
 
             // Add fallback sources as local providers also
             var fallbackPackageFolders = new List<NuGetv3LocalRepository>();
 
             foreach (var path in fallbackPackageFolderPaths)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path);
+                var fallbackRepository = new NuGetv3LocalRepository(path, lowercase: true);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 var provider = new SourceRepositoryDependencyProvider(fallbackSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
