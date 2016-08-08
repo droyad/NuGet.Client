@@ -4,7 +4,8 @@
   "packOptions": {
     "files": {
       "mappings": {
-        "contentFiles/any/any/NuGet.targets": "NuGet.targets"
+        "contentFiles/any/any/NuGet.targets": "NuGet.targets",
+        "contentFiles/any/native/NuGet.targets": "NuGet.targets"
       }
     }
   },

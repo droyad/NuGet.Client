@@ -410,6 +410,10 @@ Function Build-CoreProjects {
     ## Moving nupkgs
     Trace-Log "Moving the packages to $Nupkgs"
     Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
+
+    # Fix nuget.build.tasks.nupkg
+    $nupkgWrenchExe = (Join-Path $NuGetClientRoot "packages\nupkgwrench.1.0.0\tools\nupkgwrench.exe")
+    & $nupkgWrenchExe contentFiles add $Nupkgs --id NuGet.Build.Tasks --input **/*.* --copy-to-output true --flatten true
 }
 
 Function Test-XProject {
