@@ -55,7 +55,7 @@ namespace NuGet.Commands.Test
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -131,7 +131,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var lockPath = Path.Combine(project1.FullName, "project.lock.json");
 
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -234,7 +234,7 @@ namespace NuGet.Commands.Test
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -330,7 +330,7 @@ namespace NuGet.Commands.Test
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -400,7 +400,7 @@ namespace NuGet.Commands.Test
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -442,7 +442,7 @@ namespace NuGet.Commands.Test
             {
                 // Arrange
                 var logger = new TestLogger();
-                var providerCache = new RestoreCommandProvidersCache(lowercase: true);
+                var providerCache = new RestoreCommandProvidersCache();
                 var restoreContext = new RestoreArgs()
                 {
                     CacheContext = new SourceCacheContext(),

@@ -62,9 +62,11 @@ namespace NuGet.Commands.Test
                     spec,
                     sources.Select(x => Repository.Factory.GetCoreV3(x)),
                     packagesDir.FullName,
-                    lowercase,
                     Enumerable.Empty<string>(),
-                    logger);
+                    logger)
+                {
+                    LowercasePackagesDirectory = lowercase
+                };
                 request.LockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
 
                 var packageId = "PackageA";
@@ -147,11 +149,11 @@ namespace NuGet.Commands.Test
                     spec,
                     sources.Select(x => Repository.Factory.GetCoreV3(x)),
                     packagesDir.FullName,
-                    !lowercase,
                     Enumerable.Empty<string>(),
                     logger)
                 {
-                    LockFilePath = lockFilePath
+                    LockFilePath = lockFilePath,
+                    LowercasePackagesDirectory = !lowercase
                 };
                 var commandA = new RestoreCommand(requestA);
                 var resultA = await commandA.ExecuteAsync();
@@ -162,11 +164,11 @@ namespace NuGet.Commands.Test
                     spec,
                     sources.Select(x => Repository.Factory.GetCoreV3(x)),
                     packagesDir.FullName,
-                    lowercase,
                     Enumerable.Empty<string>(),
                     logger)
                 {
-                    LockFilePath = lockFilePath
+                    LockFilePath = lockFilePath,
+                    LowercasePackagesDirectory = lowercase
                 };
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();

@@ -64,7 +64,7 @@ namespace NuGet.Commands.Test
         public async Task RequestFactory_FindProjectJsonFilesInDirectory()
         {
             // Arrange
-            var cache = new RestoreCommandProvidersCache(lowercase: true);
+            var cache = new RestoreCommandProvidersCache();
             var provider = new ProjectJsonRestoreRequestProvider(cache);
 
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())

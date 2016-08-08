@@ -21,7 +21,6 @@ namespace NuGet.Commands
             ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage)
         {
             PackagesDirectory = request.PackagesDirectory;
-            Lowercase = request.Lowercase;
             ExistingLockFile = existingLockFile;
             RuntimeGraphCache = runtimeGraphCache;
             RuntimeGraphCacheByPackage = runtimeGraphCacheByPackage;
@@ -32,7 +31,6 @@ namespace NuGet.Commands
         }
 
         public string PackagesDirectory { get; }
-        public bool Lowercase { get; }
         public int MaxDegreeOfConcurrency { get; }
         public LockFile ExistingLockFile { get; }
         public PackageSpec Project { get; }

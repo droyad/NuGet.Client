@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.XPlat
 
                         cacheContext.NoCache = noCache.HasValue();
                         cacheContext.IgnoreFailedSources = ignoreFailedSources.HasValue();
-                        var providerCache = new RestoreCommandProvidersCache(lowercase: !legacyPackagesDirectory);
+                        var providerCache = new RestoreCommandProvidersCache();
 
                         // Ordered request providers
                         var providers = new List<IRestoreRequestProvider>();
@@ -108,13 +108,14 @@ namespace NuGet.CommandLine.XPlat
                         ISettings defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                         CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
 
-                        var restoreContext = new RestoreArgs()
+                        var restoreContext = new RestoreArgs
                         {
                             CacheContext = cacheContext,
                             LockFileVersion = LockFileFormat.Version,
                             ConfigFile = configFile.HasValue() ? configFile.Value() : null,
                             DisableParallel = disableParallel.HasValue(),
                             GlobalPackagesFolder = packagesDirectory.HasValue() ? packagesDirectory.Value() : null,
+                            LowercaseGlobalPackagesFolder = !legacyPackagesDirectory,
                             Inputs = new List<string>(argRoot.Values),
                             Log = log,
                             MachineWideSettings = new XPlatMachineWideSetting(),

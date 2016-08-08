@@ -78,35 +78,30 @@ namespace NuGet.Commands
 
         public static RestoreCommandProviders Create(
             string globalFolderPath,
-            bool lowercase,
             IEnumerable<string> fallbackPackageFolderPaths,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, lowercase);
+            var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
-            var localProviders = new List<IRemoteDependencyProvider>();
-            if (lowercase)
+            var localProviders = new List<IRemoteDependencyProvider>
             {
-                // Do not throw or warn for global cache
-                var globalPackagesProvider = new SourceRepositoryDependencyProvider(
+                new SourceRepositoryDependencyProvider(
                     globalPackagesSource,
                     log,
                     cacheContext,
                     ignoreFailedSources: true,
-                    ignoreWarning: true);
-
-                localProviders.Add(globalPackagesProvider);
-            }
+                    ignoreWarning: true)
+            };
 
             // Add fallback sources as local providers also
             var fallbackPackageFolders = new List<NuGetv3LocalRepository>();
 
             foreach (var path in fallbackPackageFolderPaths)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path, lowercase: true);
+                var fallbackRepository = new NuGetv3LocalRepository(path);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 var provider = new SourceRepositoryDependencyProvider(fallbackSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);

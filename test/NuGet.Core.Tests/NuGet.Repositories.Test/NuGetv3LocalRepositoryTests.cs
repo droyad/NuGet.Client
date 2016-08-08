@@ -4,7 +4,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -13,15 +12,13 @@ namespace NuGet.Repositories.Test
 {
     public class NuGetv3LocalRepositoryTests
     {
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void NuGetv3LocalRepository_FindPackagesById_ReturnsEmptySequenceWithIdNotFound(bool lowercase)
+        [Fact]
+        public void NuGetv3LocalRepository_FindPackagesById_ReturnsEmptySequenceWithIdNotFound()
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
 
                 // Act
                 var packages = target.FindPackagesById("Foo");
@@ -38,11 +35,9 @@ namespace NuGet.Repositories.Test
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var id = "Foo";
-                var lowercase = true;
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     workingDir,
-                    lowercase,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext("foo", "1.0.0"));
 
@@ -55,20 +50,17 @@ namespace NuGet.Repositories.Test
                 Assert.Equal("1.0.0", packages.ElementAt(0).Version.ToNormalizedString());
             }
         }
-
-        [Theory]
-        [InlineData(true, "2.0.0-beta")]
-        [InlineData(false, "2.0.0-Beta")]
-        public async Task NuGetv3LocalRepository_FindPackagesById_LeavesVersionCaseFoundOnFileSystem(bool lowercase, string versionWithCase)
+        
+        [Fact]
+        public async Task NuGetv3LocalRepository_FindPackagesById_LeavesVersionCaseFoundOnFileSystem()
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var id = "Foo";
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     workingDir,
-                    lowercase,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
                     new SimpleTestPackageContext(id, "2.0.0-Beta"));
@@ -82,19 +74,17 @@ namespace NuGet.Repositories.Test
                 Assert.Equal(id, packages.ElementAt(0).Id);
                 Assert.Equal("1.0.0", packages.ElementAt(0).Version.ToNormalizedString());
                 Assert.Equal(id, packages.ElementAt(1).Id);
-                Assert.Equal(versionWithCase, packages.ElementAt(1).Version.ToNormalizedString());
+                Assert.Equal("2.0.0-beta", packages.ElementAt(1).Version.ToNormalizedString());
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [Fact]
         public void NuGetv3LocalRepository_FindPackage_ReturnsNullWithIdNotFound(bool lowercase)
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
 
                 // Act
                 var package = target.FindPackage("Foo", NuGetVersion.Parse("2.0.0-BETA"));
@@ -107,16 +97,15 @@ namespace NuGet.Repositories.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task NuGetv3LocalRepository_FindPackage_ReturnsNullWithVersionNotFound(bool lowercase)
+        public async Task NuGetv3LocalRepository_FindPackage_ReturnsNullWithVersionNotFound()
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var id = "Foo";
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     workingDir,
-                    lowercase,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
                     new SimpleTestPackageContext(id, "2.0.0-Beta"));
@@ -129,19 +118,16 @@ namespace NuGet.Repositories.Test
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task NuGetv3LocalRepository_FindPackage_UsesProvidedVersionCase(bool lowercase)
+        [Fact]
+        public async Task NuGetv3LocalRepository_FindPackage_UsesProvidedVersionCase()
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var id = "Foo";
-                var target = new NuGetv3LocalRepository(workingDir, lowercase);
+                var target = new NuGetv3LocalRepository(workingDir);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     workingDir,
-                    lowercase,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
                     new SimpleTestPackageContext(id, "2.0.0-Beta"));

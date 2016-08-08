@@ -27,13 +27,6 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
             = new ConcurrentDictionary<string, NuGetv3LocalRepository>(_comparer);
 
-        private readonly bool _lowercase;
-
-        public RestoreCommandProvidersCache(bool lowercase)
-        {
-            _lowercase = lowercase;
-        }
-
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
             IReadOnlyList<string> fallbackPackagesPaths,
@@ -41,7 +34,7 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, path => new NuGetv3LocalRepository(path, _lowercase));
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, path => new NuGetv3LocalRepository(path));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -57,8 +50,7 @@ namespace NuGet.Commands
 
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                // Fallback folders always use lowercase paths.
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, lowercase: true));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>

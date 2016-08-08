@@ -54,7 +54,7 @@ namespace NuGet.Commands
                   log)
         {
         }
-
+        
         /// <summary>
         /// This overload should only be used by tests.
         /// </summary>
@@ -62,31 +62,11 @@ namespace NuGet.Commands
             PackageSpec project,
             IEnumerable<SourceRepository> sources,
             string packagesDirectory,
-            IEnumerable<string> fallbackPackageFolders,
-            ILogger log) : this(
-                project,
-                sources,
-                packagesDirectory,
-                lowercase: true,
-                fallbackPackageFolders: fallbackPackageFolders,
-                log: log)
-        {
-        }
-
-        /// <summary>
-        /// This overload should only be used by tests.
-        /// </summary>
-        public RestoreRequest(
-            PackageSpec project,
-            IEnumerable<SourceRepository> sources,
-            string packagesDirectory,
-            bool lowercase,
             IEnumerable<string> fallbackPackageFolders,
             ILogger log) : this(
                 project,
                 RestoreCommandProviders.Create(
                     packagesDirectory,
-                    lowercase: lowercase,
                     fallbackPackageFolderPaths: fallbackPackageFolders,
                     sources: sources,
                     cacheContext: new SourceCacheContext(),
@@ -133,7 +113,7 @@ namespace NuGet.Commands
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
-            Lowercase = dependencyProviders.GlobalPackages.Lowercase;
+            LowercasePackagesDirectory = true;
 
             Log = log;
 
@@ -158,7 +138,7 @@ namespace NuGet.Commands
         /// Whether or not packages written and read from the global packages directory has
         /// lowercase ID and version folder names or original case.
         /// </summary>
-        public bool Lowercase { get; }
+        public bool LowercasePackagesDirectory { get; set; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)

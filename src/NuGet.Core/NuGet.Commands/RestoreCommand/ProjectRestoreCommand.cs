@@ -271,10 +271,9 @@ namespace NuGet.Commands
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 _request.PackagesDirectory,
-                _request.Lowercase,
                 _logger,
-                packageSaveMode: _request.PackageSaveMode,
-                xmlDocFileSaveMode: _request.XmlDocFileSaveMode);
+                _request.PackageSaveMode,
+                _request.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),

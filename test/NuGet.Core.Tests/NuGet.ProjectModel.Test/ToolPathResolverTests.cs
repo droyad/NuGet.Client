@@ -8,21 +8,44 @@ namespace NuGet.ProjectModel.Test
     public class ToolPathResolverTests
     {
         [Fact]
-        public void ToolPathResolver_BuildsLockFilePath()
+        public void ToolPathResolver_BuildsLowercaseLockFilePath()
         {
             // Arrange
             var target = new ToolPathResolver("packages");
             var expected = Path.Combine(
                 "packages",
                 ".tools",
-                "packagea",
+                "Packagea",
                 "3.1.4-beta",
                 "netstandard1.3",
                 "project.lock.json");
 
             // Act
             var actual = target.GetLockFilePath(
-                "packageA",
+                "PackageA",
+                NuGetVersion.Parse("3.1.4-BETA"),
+                FrameworkConstants.CommonFrameworks.NetStandard13);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void ToolPathResolver_BuildsOriginalCaseLockFilePath()
+        {
+            // Arrange
+            var target = new ToolPathResolver("packages");
+            var expected = Path.Combine(
+                "packages",
+                ".tools",
+                "PackageA",
+                "3.1.4-BETA",
+                "netstandard1.3",
+                "project.lock.json");
+
+            // Act
+            var actual = target.GetLockFilePath(
+                "PackageA",
                 NuGetVersion.Parse("3.1.4-BETA"),
                 FrameworkConstants.CommonFrameworks.NetStandard13);
 

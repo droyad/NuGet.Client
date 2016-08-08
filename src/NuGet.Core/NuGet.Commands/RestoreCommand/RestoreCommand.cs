@@ -133,6 +133,27 @@ namespace NuGet.Commands
                 DowngradeLockFileToV1(lockFile);
             }
 
+            // If the request is for original case in the packages folder, take some additional
+            // post-processing steps.
+            if (!_request.LowercasePackagesDirectory)
+            {
+                var originalCase = new OriginalCaseGlobalPackageFolder(_request);
+
+                // Convert the case of all the libraries used in the project restore and tool
+                // restores.
+                var allGraphs = graphs.Concat(toolRestoreResults.SelectMany(toolResult => toolResult.Graphs));
+                await originalCase.CopyPackagesToOriginalCaseAsync(allGraphs, token);
+                
+                // Convert all of the tool results.
+                foreach (var toolResult in toolRestoreResults)
+                {
+                    originalCase.ConvertToolRestoreResultToOriginalCase(toolResult);
+                }
+
+                // Convert the project lock file.
+                originalCase.ConvertLockFileToOriginalCase(lockFile);
+            }
+
             return new RestoreResult(
                 _success,
                 graphs,
@@ -431,6 +452,7 @@ namespace NuGet.Commands
                 results.Add(new ToolRestoreResult(
                     tool.LibraryRange.Name,
                     toolSuccess,
+                    graphs,
                     target,
                     fileTargetLibrary,
                     toolLockFilePath,

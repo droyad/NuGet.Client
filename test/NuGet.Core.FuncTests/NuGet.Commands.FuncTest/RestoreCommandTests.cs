@@ -1918,11 +1918,9 @@ namespace NuGet.Commands.FuncTest
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                var lowercase = true;
+                
                 var provider = RestoreCommandProviders.Create(
                     packagesDir,
-                    lowercase,
                     new List<string>(),
                     sources.Select(p => cachingSourceProvider.CreateRepository(p)),
                     context,
@@ -1970,11 +1968,9 @@ namespace NuGet.Commands.FuncTest
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                var lowercase = true;
+                
                 var provider = RestoreCommandProviders.Create(
                     packagesDir,
-                    lowercase,
                     new List<string>(),
                     sources.Select(p => cachingSourceProvider.CreateRepository(p)),
                     context,

@@ -1956,9 +1956,8 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateTestPackage(packageA, repositoryPath);
 
-                var lowercase = true;
                 var saveMode = PackageSaveMode.Defaultv3;
-                await SimpleTestPackageUtility.CreateFolderFeedV3(fallback2, lowercase, saveMode, Directory.GetFiles(repositoryPath));
+                await SimpleTestPackageUtility.CreateFolderFeedV3(fallback2, saveMode, Directory.GetFiles(repositoryPath));
 
                 Util.CreateTestPackage(packageB, repositoryPath);
 
