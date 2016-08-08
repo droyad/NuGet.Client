@@ -413,7 +413,12 @@ Function Build-CoreProjects {
 
     # Fix nuget.build.tasks.nupkg
     $nupkgWrenchExe = (Join-Path $NuGetClientRoot "packages\nupkgwrench.1.0.0\tools\nupkgwrench.exe")
-    & $nupkgWrenchExe contentFiles add $Nupkgs --id NuGet.Build.Tasks --input **/*.* --copy-to-output true --flatten true
+    $paths = (& $nupkgWrenchExe list $Nupkgs --id nuget.build.tasks) | Out-String
+    $splitResult = (($paths -split '[\r\n]') |? {$_} )
+    foreach ($path in $splitResult)
+    {
+        & $nupkgWrenchExe nuspec contentFiles add $path --include **/*.* --copy-to-output true --flatten true
+    }
 }
 
 Function Test-XProject {
