@@ -38,7 +38,7 @@ namespace NuGet.Commands.Test
                 var graph = GetRestoreTargetGraph(identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
-                var resolver = new VersionFolderPathResolver(packagesDirectory, lowercase: false);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
 
                 var target = new OriginalCaseGlobalPackageFolder(request);
 
@@ -72,7 +72,7 @@ namespace NuGet.Commands.Test
                 var graph = GetRestoreTargetGraph(identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
-                var resolver = new VersionFolderPathResolver(packagesDirectory, lowercase: false);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
 
                 var hashPath = resolver.GetHashPath(identity.Id, identity.Version);
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
@@ -113,7 +113,7 @@ namespace NuGet.Commands.Test
                 var graphB = GetRestoreTargetGraph(identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
-                var resolver = new VersionFolderPathResolver(packagesDirectory, lowercase: false);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
 
                 var target = new OriginalCaseGlobalPackageFolder(request);
 
@@ -233,7 +233,7 @@ namespace NuGet.Commands.Test
                 Enumerable.Empty<string>(),
                 logger)
             {
-                LowercasePackagesDirectory = false
+                IsLowercasePackagesDirectory = false
             };
         }
 

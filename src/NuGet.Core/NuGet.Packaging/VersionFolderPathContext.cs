@@ -9,7 +9,7 @@ namespace NuGet.Packaging
     {
         public PackageIdentity Package { get; }
         public string PackagesDirectory { get; }
-        public bool Lowercase { get; }
+        public bool IsLowercasePackagesDirectory { get; }
         public ILogger Logger { get; }
         public PackageSaveMode PackageSaveMode { get; }
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
@@ -17,7 +17,7 @@ namespace NuGet.Packaging
         public VersionFolderPathContext(
             PackageIdentity package,
             string packagesDirectory,
-            bool lowercase,
+            bool isLowercasePackagesDirectory,
             ILogger logger,
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode)
@@ -42,7 +42,7 @@ namespace NuGet.Packaging
 
             Package = package;
             PackagesDirectory = packagesDirectory;
-            Lowercase = lowercase;
+            IsLowercasePackagesDirectory = isLowercasePackagesDirectory;
             Logger = logger;
             PackageSaveMode = packageSaveMode;
             XmlDocFileSaveMode = xmlDocFileSaveMode;
@@ -56,7 +56,7 @@ namespace NuGet.Packaging
             XmlDocFileSaveMode xmlDocFileSaveMode) : this(
                 package,
                 packagesDirectory,
-                lowercase: true,
+                isLowercasePackagesDirectory: true,
                 logger: logger,
                 packageSaveMode: packageSaveMode,
                 xmlDocFileSaveMode: xmlDocFileSaveMode)

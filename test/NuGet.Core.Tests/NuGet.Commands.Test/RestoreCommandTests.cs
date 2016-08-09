@@ -24,7 +24,7 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_ObservesLowercaseFlag(bool lowercase)
+        public async Task RestoreCommand_ObservesLowercaseFlag(bool isLowercase)
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -36,7 +36,7 @@ namespace NuGet.Commands.Test
                 sourceDir.Create();
                 projectDir.Create();
 
-                var resolver = new VersionFolderPathResolver(packagesDir.FullName, lowercase);
+                var resolver = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
 
                 var sources = new List<string>();
                 sources.Add(sourceDir.FullName);
@@ -65,7 +65,7 @@ namespace NuGet.Commands.Test
                     Enumerable.Empty<string>(),
                     logger)
                 {
-                    LowercasePackagesDirectory = lowercase
+                    IsLowercasePackagesDirectory = isLowercase
                 };
                 request.LockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
 
@@ -99,7 +99,7 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSetting(bool lowercase)
+        public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSetting(bool isLowercase)
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -111,8 +111,8 @@ namespace NuGet.Commands.Test
                 sourceDir.Create();
                 projectDir.Create();
 
-                var resolverA = new VersionFolderPathResolver(packagesDir.FullName, !lowercase);
-                var resolverB = new VersionFolderPathResolver(packagesDir.FullName, lowercase);
+                var resolverA = new VersionFolderPathResolver(packagesDir.FullName, !isLowercase);
+                var resolverB = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
 
                 var sources = new List<string>();
                 sources.Add(sourceDir.FullName);
@@ -153,7 +153,7 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    LowercasePackagesDirectory = !lowercase
+                    IsLowercasePackagesDirectory = !isLowercase
                 };
                 var commandA = new RestoreCommand(requestA);
                 var resultA = await commandA.ExecuteAsync();
@@ -168,7 +168,7 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    LowercasePackagesDirectory = lowercase
+                    IsLowercasePackagesDirectory = isLowercase
                 };
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();

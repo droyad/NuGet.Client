@@ -10,17 +10,17 @@ namespace NuGet.ProjectModel
     public class ToolPathResolver
     {
         private readonly string _packagesDirectory;
-        private readonly bool _lowercase;
+        private readonly bool _isLowercase;
 
         public ToolPathResolver(string packagesDirectory)
-            : this(packagesDirectory, lowercase: true)
+            : this(packagesDirectory, isLowercase: true)
         {
         }
 
-        public ToolPathResolver(string packagesDirectory, bool lowercase)
+        public ToolPathResolver(string packagesDirectory, bool isLowercase)
         {
             _packagesDirectory = packagesDirectory;
-            _lowercase = lowercase;
+            _isLowercase = isLowercase;
         }
 
         public string GetLockFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
             var versionString = version.ToNormalizedString();
             var frameworkString = framework.GetShortFolderName();
 
-            if (_lowercase)
+            if (_isLowercase)
             {
                 packageId = packageId.ToLowerInvariant();
                 versionString = versionString.ToLowerInvariant();

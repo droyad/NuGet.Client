@@ -10,16 +10,16 @@ namespace NuGet.Packaging
     public class VersionFolderPathResolver
     {
         private readonly string _path;
-        private readonly bool _lowercase;
+        private readonly bool _isLowercase;
 
-        public VersionFolderPathResolver(string path) : this(path, lowercase: true)
+        public VersionFolderPathResolver(string path) : this(path, isLowercase: true)
         {
         }
 
-        public VersionFolderPathResolver(string path, bool lowercase)
+        public VersionFolderPathResolver(string path, bool isLowercase)
         {
             _path = path;
-            _lowercase = lowercase;
+            _isLowercase = isLowercase;
         }
 
         public string GetInstallPath(string packageId, NuGetVersion version)
@@ -84,7 +84,7 @@ namespace NuGet.Packaging
         {
             var versionString = version.ToNormalizedString();
 
-            if (_lowercase)
+            if (_isLowercase)
             {
                 versionString = versionString.ToLowerInvariant();
             }
@@ -94,7 +94,7 @@ namespace NuGet.Packaging
 
         private string Normalize(string packageId)
         {
-            if (_lowercase)
+            if (_isLowercase)
             {
                 packageId = packageId.ToLowerInvariant();
             }

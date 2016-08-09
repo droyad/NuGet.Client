@@ -406,7 +406,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, log.Errors);
                 Assert.Equal(0, log.Warnings);
 
-                var resolver = new VersionFolderPathResolver(packagesDir, lowercase: !useSwitch);
+                var resolver = new VersionFolderPathResolver(packagesDir, isLowercase: !useSwitch);
                 
                 Assert.True(File.Exists(resolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
                 Assert.True(File.Exists(resolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
@@ -414,7 +414,7 @@ namespace NuGet.XPlat.FuncTest
                 // The switch results in both cases being restored.
                 if (useSwitch)
                 {
-                    var lowercaseResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
+                    var lowercaseResolver = new VersionFolderPathResolver(packagesDir, isLowercase: true);
                     Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
                     Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
                 }

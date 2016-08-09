@@ -217,7 +217,7 @@ namespace NuGet.Packaging
 
             var packagePathResolver = new VersionFolderPathResolver(
             	versionFolderPathContext.PackagesDirectory,
-            	versionFolderPathContext.Lowercase);
+            	versionFolderPathContext.IsLowercasePackagesDirectory);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;

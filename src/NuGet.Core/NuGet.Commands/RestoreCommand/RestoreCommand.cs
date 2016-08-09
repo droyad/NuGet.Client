@@ -137,7 +137,7 @@ namespace NuGet.Commands
             // The main restore operation restores packages with lowercase ID and version. If the
             // restore request is for lowercase packages, then take this additional post-processing
             // step.
-            if (!_request.LowercasePackagesDirectory)
+            if (!_request.IsLowercasePackagesDirectory)
             {
                 var originalCase = new OriginalCaseGlobalPackageFolder(_request);
 

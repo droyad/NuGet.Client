@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -36,11 +39,11 @@ namespace NuGet.Commands
 
             _pathResolver = new VersionFolderPathResolver(
                 _request.PackagesDirectory,
-                _request.LowercasePackagesDirectory);
+                _request.IsLowercasePackagesDirectory);
 
             _toolPathResolver = new ToolPathResolver(
                 _request.PackagesDirectory,
-                _request.LowercasePackagesDirectory);
+                _request.IsLowercasePackagesDirectory);
         }
 
         public async Task CopyPackagesToOriginalCaseAsync(IEnumerable<RestoreTargetGraph> graphs, CancellationToken token)
@@ -68,7 +71,7 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    var originalCaseContext = GetPathContext(identity, lowercase: _request.LowercasePackagesDirectory);
+                    var originalCaseContext = GetPathContext(identity, isLowercase: _request.IsLowercasePackagesDirectory);
 
                     // Install the package.
                     var installed = await PackageExtractor.InstallFromSourceAsync(
@@ -89,13 +92,12 @@ namespace NuGet.Commands
 
         public void ConvertLockFileToOriginalCase(LockFile lockFile)
         {
-            foreach (var library in lockFile.Libraries)
-            {
-                if (library.Type != LibraryType.Package)
-                {
-                    continue;
-                }
+            var packageLibraries = lockFile
+                .Libraries
+                .Where(library => library.Type == LibraryType.Package);
 
+            foreach (var library in packageLibraries)
+            {
                 var path = _pathResolver.GetPackageDirectory(library.Name, library.Version);
                 library.Path = PathUtility.GetPathWithForwardSlashes(path);
             }
@@ -114,12 +116,12 @@ namespace NuGet.Commands
                 result.LockFileTarget.TargetFramework);
         }
 
-        private VersionFolderPathContext GetPathContext(PackageIdentity packageIdentity, bool lowercase)
+        private VersionFolderPathContext GetPathContext(PackageIdentity packageIdentity, bool isLowercase)
         {
             return new VersionFolderPathContext(
                 packageIdentity,
                 _request.PackagesDirectory,
-                lowercase,
+                isLowercase,
                 _request.Log,
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode);

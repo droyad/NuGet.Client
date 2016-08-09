@@ -22,7 +22,7 @@ namespace NuGet.Commands
 
         public string GlobalPackagesFolder { get; set; }
 
-        public bool LowercaseGlobalPackagesFolder { get; set; } = true;
+        public bool IsLowercaseGlobalPackagesFolder { get; set; } = true;
 
         public bool DisableParallel { get; set; }
 
@@ -157,7 +157,7 @@ namespace NuGet.Commands
             request.RequestedRuntimes.UnionWith(Runtimes);
             request.FallbackRuntimes.UnionWith(FallbackRuntimes);
 
-            request.LowercasePackagesDirectory = LowercaseGlobalPackagesFolder;
+            request.IsLowercasePackagesDirectory = IsLowercaseGlobalPackagesFolder;
 
             if (LockFileVersion.HasValue && LockFileVersion.Value > 0)
             {

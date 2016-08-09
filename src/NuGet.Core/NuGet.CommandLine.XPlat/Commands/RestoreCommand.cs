@@ -79,7 +79,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_IgnoreFailedSource_Description,
                     CommandOptionType.NoValue);
 
-                var legacyPackagesDirectoryOption = restore.Option(
+                var isLegacyPackagesDirectoryOption = restore.Option(
                     "--legacy-packages-directory",
                     Strings.Restore_Switch_LegacyPackagesDirectory_Description,
                     CommandOptionType.NoValue);
@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.XPlat
 
                     using (var cacheContext = new SourceCacheContext())
                     {
-                        var legacyPackagesDirectory = legacyPackagesDirectoryOption.HasValue();
+                        var isLegacyPackagesDirectory = isLegacyPackagesDirectoryOption.HasValue();
 
                         cacheContext.NoCache = noCache.HasValue();
                         cacheContext.IgnoreFailedSources = ignoreFailedSources.HasValue();
@@ -115,7 +115,7 @@ namespace NuGet.CommandLine.XPlat
                             ConfigFile = configFile.HasValue() ? configFile.Value() : null,
                             DisableParallel = disableParallel.HasValue(),
                             GlobalPackagesFolder = packagesDirectory.HasValue() ? packagesDirectory.Value() : null,
-                            LowercaseGlobalPackagesFolder = !legacyPackagesDirectory,
+                            IsLowercaseGlobalPackagesFolder = !isLegacyPackagesDirectory,
                             Inputs = new List<string>(argRoot.Values),
                             Log = log,
                             MachineWideSettings = new XPlatMachineWideSetting(),

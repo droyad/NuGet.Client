@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool lowercase)
+        public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
         {
             // Arrange
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -111,7 +111,7 @@ namespace NuGet.Packaging.Test
                    "lib/net45/A.dll");
 
                 var packagesPath = Path.Combine(root, "packages");
-                var resolver = new VersionFolderPathResolver(packagesPath, lowercase);
+                var resolver = new VersionFolderPathResolver(packagesPath, isLowercase);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -121,7 +121,7 @@ namespace NuGet.Packaging.Test
                         new VersionFolderPathContext(
                             identity,
                             packagesPath,
-                            lowercase,
+                            isLowercase,
                             new TestLogger(),
                             packageSaveMode: PackageSaveMode.Nupkg,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),

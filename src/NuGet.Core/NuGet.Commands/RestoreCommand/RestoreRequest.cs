@@ -113,7 +113,7 @@ namespace NuGet.Commands
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
-            LowercasePackagesDirectory = true;
+            IsLowercasePackagesDirectory = true;
 
             Log = log;
 
@@ -138,7 +138,7 @@ namespace NuGet.Commands
         /// Whether or not packages written and read from the global packages directory has
         /// lowercase ID and version folder names or original case.
         /// </summary>
-        public bool LowercasePackagesDirectory { get; set; }
+        public bool IsLowercasePackagesDirectory { get; set; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)
