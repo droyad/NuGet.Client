@@ -133,24 +133,27 @@ namespace NuGet.Commands
                 DowngradeLockFileToV1(lockFile);
             }
 
-            // If the request is for original case in the packages folder, take some additional
-            // post-processing steps.
+
+            // The main restore operation restores packages with lowercase ID and version. If the
+            // restore request is for lowercase packages, then take this additional post-processing
+            // step.
             if (!_request.LowercasePackagesDirectory)
             {
                 var originalCase = new OriginalCaseGlobalPackageFolder(_request);
 
-                // Convert the case of all the libraries used in the project restore and tool
+                // Convert the case of all the packages used in the project restore and tool
                 // restores.
                 var allGraphs = graphs.Concat(toolRestoreResults.SelectMany(toolResult => toolResult.Graphs));
                 await originalCase.CopyPackagesToOriginalCaseAsync(allGraphs, token);
-                
-                // Convert all of the tool results.
+
+                // Convert all of the tool results. This includes the tool lock file contents as
+                // well as the path to the tool lock files.
                 foreach (var toolResult in toolRestoreResults)
                 {
                     originalCase.ConvertToolRestoreResultToOriginalCase(toolResult);
                 }
 
-                // Convert the project lock file.
+                // Convert the project lock file contents.
                 originalCase.ConvertLockFileToOriginalCase(lockFile);
             }
 

@@ -45,14 +45,7 @@ namespace NuGet.Commands
 
         public async Task CopyPackagesToOriginalCaseAsync(IEnumerable<RestoreTargetGraph> graphs, CancellationToken token)
         {
-            // The main restore operation restores packages with lowercase ID and version. If the
-            // restore request is for lowercase packages, then this additional postprocessing step
-            // is not needed.
-            if (_request.LowercasePackagesDirectory)
-            {
-                return;
-            }
-
+            // Keep track of the packages we've already converted to original case.
             var converted = new HashSet<PackageIdentity>();
 
             // Iterate over every package node.
