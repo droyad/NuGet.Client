@@ -396,11 +396,20 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, exitCode);
                 Assert.Equal(0, log.Errors);
                 Assert.Equal(0, log.Warnings);
-                Assert.Equal(2, Directory.GetDirectories(packagesDir).Length);
 
                 var resolver = new VersionFolderPathResolver(packagesDir, lowercase: !useSwitch);
                 Assert.True(File.Exists(resolver.GetPackageFilePath("PackageA", NuGetVersion.Parse("1.0.0-Beta"))));
                 Assert.True(File.Exists(resolver.GetPackageFilePath("PackageB", NuGetVersion.Parse("2.0.0-Beta"))));
+
+                // The switch results in both cases being restored.
+                if (useSwitch)
+                {
+                    var lowercaseResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath("PackageA", NuGetVersion.Parse("1.0.0-Beta"))));
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath("PackageB", NuGetVersion.Parse("2.0.0-Beta"))));
+                }
+
+                // Verify the lock file has the correct path.
             }
         }
     }

@@ -122,7 +122,7 @@ namespace NuGet.Packaging.Test
                             identity,
                             packagesPath,
                             lowercase,
-                            NullLogger.Instance,
+                            new TestLogger(),
                             packageSaveMode: PackageSaveMode.Nupkg,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
