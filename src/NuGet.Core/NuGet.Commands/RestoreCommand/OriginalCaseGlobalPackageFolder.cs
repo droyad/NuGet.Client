@@ -146,7 +146,13 @@ namespace NuGet.Commands
 
             if (localPackage != null && File.Exists(localPackage.Package.ZipPath))
             {
-                using (var stream = File.OpenRead(localPackage.Package.ZipPath))
+                using (var stream = new FileStream(
+                    localPackage.Package.ZipPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 4096,
+                    useAsync: true))
                 {
                     await stream.CopyToAsync(destination, bufferSize: 4096, cancellationToken: token);
                 }

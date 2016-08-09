@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +23,7 @@ namespace NuGet.Commands.Test
     public class OriginalCaseGlobalPackagesFolderTests
     {
         [Fact]
-        public async Task OriginalCaseGlobalPackagesFolder_ConvertsPackages()
+        public async Task OriginalCaseGlobalPackagesFolder_WhenPackageMustComeFromProvider_ConvertsPackages()
         {
             // Arrange
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -28,6 +31,7 @@ namespace NuGet.Commands.Test
                 var packagesDirectory = Path.Combine(workingDirectory, "packages");
                 var sourceDirectory = Path.Combine(workingDirectory, "source");
 
+                // Add the package to the source.
                 var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
                 var packagePath = SimpleTestPackageUtility.CreateFullPackage(
                     sourceDirectory,
@@ -52,7 +56,48 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
         }
-        
+
+        [Fact]
+        public async Task OriginalCaseGlobalPackagesFolder_WhenPackageComesFromLocalFolder_ConvertsPackages()
+        {
+            // Arrange
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDirectory = Path.Combine(workingDirectory, "packages");
+                var sourceDirectory = Path.Combine(workingDirectory, "source");
+                var fallbackDirectory = Path.Combine(workingDirectory, "fallback");
+
+                // Add a different package to the source.
+                var identityA = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var packagePath = SimpleTestPackageUtility.CreateFullPackage(
+                    sourceDirectory,
+                    identityA.Id,
+                    identityA.Version.ToString());
+
+                var logger = new TestLogger();
+                var identityB = new PackageIdentity("PackageB", NuGetVersion.Parse("2.0.0-Beta"));
+                var graph = GetRestoreTargetGraph(identityB, packagePath, logger);
+
+                // Add the package to the fallback directory.
+                await SimpleTestPackageUtility.CreateFolderFeedV3(fallbackDirectory, identityB);
+
+                var request = GetRestoreRequest(packagesDirectory, logger, fallbackDirectory);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
+
+                var target = new OriginalCaseGlobalPackageFolder(request);
+
+                // Act
+                await target.CopyPackagesToOriginalCaseAsync(
+                    new[] { graph },
+                    CancellationToken.None);
+
+                // Assert
+                Assert.False(File.Exists(resolver.GetPackageFilePath(identityA.Id, identityA.Version)));
+                Assert.True(File.Exists(resolver.GetPackageFilePath(identityB.Id, identityB.Version)));
+                Assert.Equal(1, logger.Messages.Count(x => x.Contains(identityB.ToString())));
+            }
+        }
+
         [Fact]
         public async Task OriginalCaseGlobalPackagesFolder_DoesNothingIfPackageIsAlreadyInstalled()
         {
@@ -224,13 +269,13 @@ namespace NuGet.Commands.Test
 
         }
 
-        private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger)
+        private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
             return new RestoreRequest(
                 new PackageSpec(new JObject()),
                 Enumerable.Empty<PackageSource>(),
                 packagesDirectory,
-                Enumerable.Empty<string>(),
+                fallbackDirectories,
                 logger)
             {
                 IsLowercasePackagesDirectory = false
