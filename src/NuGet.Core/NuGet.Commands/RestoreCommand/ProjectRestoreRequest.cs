@@ -17,7 +17,7 @@ namespace NuGet.Commands
             RestoreRequest request,
             PackageSpec packageSpec,
             LockFile existingLockFile,
-            Dictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
+            ConcurrentDictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
             ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage)
         {
             PackagesDirectory = request.PackagesDirectory;
@@ -36,7 +36,7 @@ namespace NuGet.Commands
         public PackageSpec Project { get; }
         public PackageSaveMode PackageSaveMode { get; }
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; }
-        public Dictionary<NuGetFramework, RuntimeGraph> RuntimeGraphCache { get; }
+        public ConcurrentDictionary<NuGetFramework, RuntimeGraph> RuntimeGraphCache { get; }
         public ConcurrentDictionary<PackageIdentity, RuntimeGraph> RuntimeGraphCacheByPackage { get; }
     }
 }

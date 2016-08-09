@@ -33,7 +33,8 @@ namespace NuGet.Commands
 
         private bool _success = true;
 
-        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
+        private readonly ConcurrentDictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache 
+            = new ConcurrentDictionary<NuGetFramework, RuntimeGraph>(NuGetFramework.Comparer);
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
@@ -362,7 +363,7 @@ namespace NuGet.Commands
                     _request,
                     toolPackageSpec,
                     existingToolLockFile,
-                    new Dictionary<NuGetFramework, RuntimeGraph>(),
+                    _runtimeGraphCache,
                     _runtimeGraphCacheByPackage);
                 var projectRestoreCommand = new ProjectRestoreCommand(_logger, projectRestoreRequest);
                 var result = await projectRestoreCommand.TryRestore(
