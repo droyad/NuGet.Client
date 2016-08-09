@@ -14,13 +14,13 @@ namespace NuGet.Repositories
         public LocalPackageInfo(
             string packageId,
             NuGetVersion version,
-            string expandedPath,
+            string path,
             string manifestPath,
             string zipPath)
         {
             Id = packageId;
             Version = version;
-            ExpandedPath = expandedPath;
+            ExpandedPath = path;
             ManifestPath = manifestPath;
             ZipPath = zipPath;
         }

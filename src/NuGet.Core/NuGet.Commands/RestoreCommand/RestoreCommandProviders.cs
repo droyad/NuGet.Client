@@ -86,14 +86,10 @@ namespace NuGet.Commands
             var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
-            var localProviders = new List<IRemoteDependencyProvider>
+            var localProviders = new List<IRemoteDependencyProvider>()
             {
-                new SourceRepositoryDependencyProvider(
-                    globalPackagesSource,
-                    log,
-                    cacheContext,
-                    ignoreFailedSources: true,
-                    ignoreWarning: true)
+                // Do not throw or warn for gloabal cache
+                new SourceRepositoryDependencyProvider(globalPackagesSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true)
             };
 
             // Add fallback sources as local providers also

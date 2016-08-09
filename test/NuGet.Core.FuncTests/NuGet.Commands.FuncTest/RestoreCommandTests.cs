@@ -1918,13 +1918,8 @@ namespace NuGet.Commands.FuncTest
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-                
-                var provider = RestoreCommandProviders.Create(
-                    packagesDir,
-                    new List<string>(),
-                    sources.Select(p => cachingSourceProvider.CreateRepository(p)),
-                    context,
-                    logger);
+
+                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
                 var request = new RestoreRequest(spec, provider, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
@@ -1968,13 +1963,8 @@ namespace NuGet.Commands.FuncTest
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-                
-                var provider = RestoreCommandProviders.Create(
-                    packagesDir,
-                    new List<string>(),
-                    sources.Select(p => cachingSourceProvider.CreateRepository(p)),
-                    context,
-                    logger);
+
+                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
                 var request = new RestoreRequest(spec, provider, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
