@@ -3,9 +3,13 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -351,12 +355,17 @@ namespace NuGet.XPlat.FuncTest
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
 
-                XPlatTestUtils.AddDependency(spec, "PackageA", "1.0.0-Beta");
-                XPlatTestUtils.AddDependency(spec, "PackageB", "2.0.0-Beta");
+                var packageAId = "PackageA";
+                var packageBId = "PackageB";
+                var packageAVersion = "1.0.0-Beta";
+                var packageBVersion = "2.0.0-Beta";
+
+                XPlatTestUtils.AddDependency(spec, packageAId, packageAVersion);
+                XPlatTestUtils.AddDependency(spec, packageBId, packageBVersion);
                 XPlatTestUtils.WriteJson(spec, specPath);
 
-                var packageA = new SimpleTestPackageContext("PackageA", "1.0.0-Beta");
-                var packageB = new SimpleTestPackageContext("PackageB", "2.0.0-Beta");
+                var packageA = new SimpleTestPackageContext(packageAId, packageAVersion);
+                var packageB = new SimpleTestPackageContext(packageBId, packageBVersion);
                 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     sourceDir,
@@ -398,18 +407,38 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, log.Warnings);
 
                 var resolver = new VersionFolderPathResolver(packagesDir, lowercase: !useSwitch);
-                Assert.True(File.Exists(resolver.GetPackageFilePath("PackageA", NuGetVersion.Parse("1.0.0-Beta"))));
-                Assert.True(File.Exists(resolver.GetPackageFilePath("PackageB", NuGetVersion.Parse("2.0.0-Beta"))));
+                
+                Assert.True(File.Exists(resolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
+                Assert.True(File.Exists(resolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
 
                 // The switch results in both cases being restored.
                 if (useSwitch)
                 {
                     var lowercaseResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
-                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath("PackageA", NuGetVersion.Parse("1.0.0-Beta"))));
-                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath("PackageB", NuGetVersion.Parse("2.0.0-Beta"))));
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
                 }
 
                 // Verify the lock file has the correct path.
+                var lockFileFormat = new LockFileFormat();
+                var lockFilePath = Path.ChangeExtension(specPath, "lock.json");
+                var lockFile = lockFileFormat.Read(lockFilePath);
+
+                var packageALibrary = lockFile.Libraries.FirstOrDefault(l => l.Name == packageAId);
+                Assert.NotNull(packageALibrary);
+                Assert.Equal(packageAVersion, packageALibrary.Version.ToFullString());
+                Assert.Equal(LibraryType.Package, packageALibrary.Type);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(packageAId, NuGetVersion.Parse(packageAVersion))),
+                    packageALibrary.Path);
+
+                var packageBLibrary = lockFile.Libraries.FirstOrDefault(l => l.Name == packageBId);
+                Assert.NotNull(packageBLibrary);
+                Assert.Equal(packageBVersion, packageBLibrary.Version.ToFullString());
+                Assert.Equal(LibraryType.Package, packageBLibrary.Type);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(packageBId, NuGetVersion.Parse(packageBVersion))),
+                    packageBLibrary.Path);
             }
         }
     }
