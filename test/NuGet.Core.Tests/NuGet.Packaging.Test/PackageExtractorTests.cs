@@ -14,6 +14,44 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool lowercase)
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var resolver = new VersionFolderPathResolver(root, lowercase);
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            root,
+                            lowercase,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
+
+                }
+            }
+        }
+
         [Fact]
         public async Task PackageExtractor_NuspecWithDifferentName_InstallForV3()
         {

@@ -79,7 +79,7 @@ namespace NuGet.Repositories.Test
         }
 
         [Fact]
-        public void NuGetv3LocalRepository_FindPackage_ReturnsNullWithIdNotFound(bool lowercase)
+        public void NuGetv3LocalRepository_FindPackage_ReturnsNullWithIdNotFound()
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -94,9 +94,7 @@ namespace NuGet.Repositories.Test
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [Fact]
         public async Task NuGetv3LocalRepository_FindPackage_ReturnsNullWithVersionNotFound()
         {
             // Arrange

@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel.Test
         public void ToolPathResolver_BuildsLowercaseLockFilePath()
         {
             // Arrange
-            var target = new ToolPathResolver("packages");
+            var target = new ToolPathResolver("packages", lowercase: true);
             var expected = Path.Combine(
                 "packages",
                 ".tools",
@@ -34,7 +34,7 @@ namespace NuGet.ProjectModel.Test
         public void ToolPathResolver_BuildsOriginalCaseLockFilePath()
         {
             // Arrange
-            var target = new ToolPathResolver("packages");
+            var target = new ToolPathResolver("packages", lowercase: false);
             var expected = Path.Combine(
                 "packages",
                 ".tools",
