@@ -62,9 +62,8 @@ namespace NuGet.PackageManagement
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContextModifier(cacheContext);
-                
-                var providers = RestoreCommandProviders.Create(
-                    effectiveGlobalPackagesFolder,
+
+                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
                     fallbackPackageFolders,
                     sources,
                     cacheContext,

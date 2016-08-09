@@ -1949,7 +1949,7 @@ namespace NuGet.PackageManagement
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.ListMaxAge = DateTimeOffset.UtcNow;
-                
+
                 var providers = RestoreCommandProviders.Create(
                     pathContext.UserPackageFolder,
                     pathContext.FallbackPackageFolders,
