@@ -356,13 +356,10 @@ namespace NuGet.Commands
             lockFile.PackageFolders.AddRange(packageFolders.Select(path => new LockFileItem(path)));
         }
 
-        private static LockFileLibrary CreateLockFileLibrary(
-            LocalPackageInfo package,
-            string sha512,
-            string path)
+        private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path)
         {
             var lockFileLib = new LockFileLibrary();
-
+            
             lockFileLib.Name = package.Id;
             lockFileLib.Version = package.Version;
             lockFileLib.Type = LibraryType.Package;
