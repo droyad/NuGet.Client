@@ -14,6 +14,83 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
+        [Fact]
+        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   sourcePath,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(packagesPath, identity);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            packagesPath,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(installed);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                    sourcePath,
+                    identity.Id,
+                    identity.Version.ToString(),
+                    DateTimeOffset.UtcNow.LocalDateTime,
+                    "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            packagesPath,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(installed);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -22,14 +99,19 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var resolver = new VersionFolderPathResolver(root, lowercase);
                 var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
-                   root,
+                   sourcePath,
                    identity.Id,
                    identity.Version.ToString(),
                    DateTimeOffset.UtcNow.LocalDateTime,
                    "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+                var resolver = new VersionFolderPathResolver(packagesPath, lowercase);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -38,7 +120,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             identity,
-                            root,
+                            packagesPath,
                             lowercase,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg,
@@ -47,7 +129,6 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
-
                 }
             }
         }
